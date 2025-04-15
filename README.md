@@ -142,37 +142,29 @@ O diagrama de classes mostra duas classes principais: User, que representa o usu
 
 ### Requisitos Funcionais:
 
-**RF01:** O sistema deve permitir o cadastro de usuários.
+**RF01:** : O sistema deve permitir o upload de documentos nos formatos PDF e DOCX.
 
-**RF02:** O sistema deve permitir o login de usuários cadastrados com autenticação **JWT (JSON Web Token)**.
+**RF02:** O sistema deve permitir o cadastro de usuários e controle de permissões.
 
-**RF03:** O sistema deve permitir que o usuário delete sua conta.
+**RF03:** O sistema deve permitir a definição da ordem de assinaturas.
 
-**RF04:** O sistema deve permitir que o usuário encerre sua sessão.
+**RF04:** O sistema deve integrar-se com uma API de assinatura digital (Gov.br).
 
-**RF05:** O sistema permite até **20 análises mensais** por usuário.
+**RF05:** O sistema deve enviar notificações quando uma assinatura for requerida.
 
-**RF06:** O sistema deve exibir as todas as análises do usuário.
+**RF06:** O sistema deve permitir a consulta do status do documento.
 
-**RF07:** O sistema deve permitir realizar análises a partir da câmera ou galeria do dispositivo.
-
-**RF08:** O modelo gerado deve ser um modelo CNN para a classificação de imagens.
-
-**RF09:** Apenas análises com confiança superior a **0.3s** são exibidas com detalhes para os usuários.
-
-**RF10:** O sistema deve exibir conteúdo sobre a análise feita pelo usuário.
+**RF07:** O sistema deve permitir o download do documento assinado.
 
 ### Requisitos Não Funcionais:
 
-**RNF01:** O sistema deve garantir a segurança dos dados do usuário.
+**RNF01:** O sistema deve ser responsivo e acessível via mobile e web.
 
-**RNF02:** O sistema deve ter um bom desempenho.
+**RNF02:** O tempo de resposta para carregamento de documentos não deve exceder 3 segundos.
 
-**RNF03:** O sistema deve ter uma interface intuitiva e fácil de utilizar.
+**RNF03:** A comunicação entre os serviços deve ser segura e criptografada.
 
-**RNF04:** O sistema deve ser modular e bem arquitetado, permitindo atualizações futuras e fácil manutenção.
-
-**RNF05:** O sistema deve apresentar testes unitários.
+**RNF04:** O sistema deve armazenar logs de assinaturas para auditoria.
 
 ---
 
@@ -204,10 +196,8 @@ Além disso, o projeto utiliza **SonarLint** no backend para garantir a qualidad
 
 - **Frontend:** Flutter/Dart
 - **Backend:** Node.js + Express.js
-- **Banco de Dados:** MongoDB
-- **Modelo de IA:** TensorFlow (convertido para JS)
-- **Observabilidade:** Grafana e Prometheus
-- **Infraestrutura:** AWS EC2, VPC
+- **Banco de Dados:** PostgreSQL
+- **Autenticação:** Keycloak / Gov.br / OAuth2
 
 ---
 
