@@ -150,3 +150,16 @@ app.*.symbols
 .python-version
 .gclient_previous_custom_vars
 .gclient_previous_sync_commits
+
+# Ignorar pasta build
+/lib/
+/bin/
+/.git/
+/.github/
+/.idea/
+/.vscode/
+/dev/
+/docs/
+/engine/
+/examples/
+/packages/
