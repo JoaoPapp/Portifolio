@@ -152,7 +152,6 @@ app.*.symbols
 .gclient_previous_sync_commits
 
 # Ignorar pasta build
-/lib/
 /bin/
 /.git/
 /.github/
