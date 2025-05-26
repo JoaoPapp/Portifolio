@@ -10,14 +10,28 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # ícones iOS
   cupertino_icons: ^1.0.8
+
+  # state management
   provider: ^6.0.5
+
+  # HTTP + upload
   dio: ^5.1.2
   file_picker: ^10.1.7
+
+  # carregar variáveis de ambiente (.env)
+  flutter_dotenv: ^5.1.1
+
+  # Firebase
+  firebase_core: ^2.10.0
+  firebase_auth: ^4.6.0
+  cloud_firestore: ^4.5.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^5.0.0
 
 flutter:
