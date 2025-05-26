@@ -162,3 +162,4 @@ app.*.symbols
 /engine/
 /examples/
 /packages/
+/.env/
