@@ -21,7 +21,7 @@ Future<void> main() async {
 }
 
 class FlowSignApp extends StatelessWidget {
-  const FlowSignApp({super.key});
+  const FlowSignApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,32 +38,16 @@ class FlowSignApp extends StatelessWidget {
       child: MaterialApp(
         title: 'FlowSign',
         theme: ThemeData(primarySwatch: Colors.blue),
+
+        // Forçamos a LoginScreen como a tela inicial:
         home: const LoginScreen(),
+
+        // Rotas nomeadas para navegação posterior
         routes: {
           '/login': (_) => const LoginScreen(),
           '/upload': (_) => const UploadScreen(),
         },
       ),
     );
-  }
-}
-
-/// Essa classe verifica se há um usuário logado.
-/// Se houver, exibe a UploadScreen; caso contrário, mostra a LoginScreen.
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // 'user' virá do StreamProvider<User?> que escuta FirebaseAuth.instance.authStateChanges()
-    final user = context.watch<User?>();
-
-    if (user == null) {
-      // Não está logado → exibe tela de login
-      return const LoginScreen();
-    } else {
-      // Já logado → exibe tela de upload
-      return const UploadScreen();
-    }
   }
 }
