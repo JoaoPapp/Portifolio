@@ -38,8 +38,6 @@ class FlowSignApp extends StatelessWidget {
       child: MaterialApp(
         title: 'FlowSign',
         theme: ThemeData(primarySwatch: Colors.blue),
-        // Remova qualquer 'initialRoute' ou 'home:' fixo aqui:
-        // deixamos o AuthGate decidir qual tela exibir
         home: const LoginScreen(),
         routes: {
           '/login': (_) => const LoginScreen(),
