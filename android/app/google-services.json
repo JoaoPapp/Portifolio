@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1002118544860",
+    "project_id": "flowsign-80719",
+    "storage_bucket": "flowsign-80719.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1002118544860:android:068e74556e2df81b242319",
+        "android_client_info": {
+          "package_name": "com.example.portifolio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKb5Mf5QVeY-9terGSuxleUeZ-yz-kqFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
