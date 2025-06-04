@@ -24,7 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      // Login bem-sucedido; AuthGate cuidará da navegação
+      // Se o login for bem-sucedido, o StreamBuilder do AuthGate vai detectar
+      // e redirecionar automaticamente para a UploadScreen.
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message;
@@ -89,7 +90,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            TextButton(onPressed: () {}, child: const Text('Criar conta')),
+            TextButton(
+              onPressed: () {
+                // Aqui você poderia abrir uma tela de cadastro de usuário, se quiser.
+              },
+              child: const Text('Criar conta'),
+            ),
           ],
         ),
       ),
