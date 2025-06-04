@@ -11,10 +11,10 @@ import 'screens/login_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1️⃣ Carrega as variáveis de ambiente de .env
+  // 1) Carrega as variáveis de ambiente do arquivo .env
   await dotenv.load(fileName: '.env');
 
-  // 2️⃣ Inicia o Firebase
+  // 2) Inicializa o Firebase
   await Firebase.initializeApp();
 
   runApp(const FlowSignApp());
@@ -27,9 +27,9 @@ class FlowSignApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // provider do seu workflow de documentos
+        // Provider que gerencia o fluxo de documentos
         ChangeNotifierProvider(create: (_) => DocumentProvider(ApiService())),
-        // provider que escuta o estado de autenticação
+        // StreamProvider que escuta mudanças de autenticação no FirebaseAuth
         StreamProvider<User?>.value(
           initialData: null,
           value: FirebaseAuth.instance.authStateChanges(),
@@ -38,7 +38,8 @@ class FlowSignApp extends StatelessWidget {
       child: MaterialApp(
         title: 'FlowSign',
         theme: ThemeData(primarySwatch: Colors.blue),
-        // nada de initialRoute nem home fixo: deixamos o AuthGate decidir
+        // Remova qualquer 'initialRoute' ou 'home:' fixo aqui:
+        // deixamos o AuthGate decidir qual tela exibir
         home: const AuthGate(),
         routes: {
           '/login': (_) => const LoginScreen(),
@@ -49,17 +50,21 @@ class FlowSignApp extends StatelessWidget {
   }
 }
 
-/// Se o usuário estiver autenticado (FirebaseAuth), segue para UploadScreen;
-/// caso contrário, mostra a LoginScreen.
+/// Essa classe verifica se há um usuário logado.
+/// Se houver, exibe a UploadScreen; caso contrário, mostra a LoginScreen.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // 'user' virá do StreamProvider<User?> que escuta FirebaseAuth.instance.authStateChanges()
     final user = context.watch<User?>();
+
     if (user == null) {
+      // Não está logado → exibe tela de login
       return const LoginScreen();
     } else {
+      // Já logado → exibe tela de upload
       return const UploadScreen();
     }
   }
