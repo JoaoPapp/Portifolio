@@ -19,7 +19,7 @@
 
 ## Objetivo
 
-O principal objetivo deste projeto é fornecer um **aplicativo móvel** que auxilie tanto médicos quanto pacientes na **identificação precoce de problemas de pele**, utilizando inteligência artificial. Ele visa fornecer suporte adicional e reduzir a ansiedade dos pacientes, mas **não substitui o diagnóstico médico**. O app é de fácil utilização, permitindo o uso por profissionais e leigos com uma interface intuitiva.
+O projeto consiste no desenvolvimento de um aplicativo móvel de workflow de documentos para assinatura digital. Nele, cada usuário cadastrado (proprietário do documento) pode fazer upload de arquivos nos formatos PDF ou DOCX, definir uma lista sequencial de signatários (com nome, CPF/CNPJ e e-mail) e iniciar um fluxo onde o sistema encaminha automaticamente o documento, por ordem, a cada pessoa para assinatura. A cada etapa, o signatário recebe um e-mail com o link de assinatura (via Autentique ou DocuSign), assina eletronicamente e, então, o documento avança para o próximo; quando todos assinarem, o PDF final é armazenado e pode ser baixado pelo proprietário. Além disso, o app mantém um histórico dos “Últimos Documentos” enviados, exibindo estado (Em andamento, Concluído ou Cancelado) e detalhes de cada signatário (pendente, assinado ou ignorado). Usuários não autenticados são direcionados à tela de login (Firebase Auth), garantindo que apenas o dono acesse seus documentos e seu fluxo de assinaturas.
 
 ---
 
