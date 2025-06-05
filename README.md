@@ -142,31 +142,29 @@ O diagrama de classes mostra duas classes principais: User, que representa o usu
 
 ### Requisitos Funcionais:
 
-**RF01**   Requisitos Funcionais (RF):
+**RF01**   Autenticação de usuários (login e logout via Firebase Auth).
 
-**RF02**   Autenticação de usuários (login e logout via Firebase Auth).
+**RF02**   Upload de documentos nos formatos PDF e DOCX.
 
-**RF03**   Upload de documentos nos formatos PDF e DOCX.
+**RF03**   Cadastro de signatários com nome, CPF/CNPJ, e-mail e definição de ordem de assinatura.
 
-**RF04**   Cadastro de signatários com nome, CPF/CNPJ, e-mail e definição de ordem de assinatura.
+**RF04**   Início do fluxo de assinatura: criação de envelope no serviço externo (Autentique/DocuSign).
 
-**RF05**   Início do fluxo de assinatura: criação de envelope no serviço externo (Autentique/DocuSign).
+**RF05**   Envio automático de e-mail ao signatário ativo com link de assinatura.
 
-**RF06**   Envio automático de e-mail ao signatário ativo com link de assinatura.
+**RF06**   Recebimento de webhook para confirmação de assinatura e avanço ao próximo signatário.
 
-**RF07**   Recebimento de webhook para confirmação de assinatura e avanço ao próximo signatário.
+**RF07**   Exibição do status de cada signatário (pendente, assinado, ignorado) em tempo real.
 
-**RF08**   Exibição do status de cada signatário (pendente, assinado, ignorado) em tempo real.
+**RF08**   Download do documento final assinado (PDF) após todos os signatários concluírem.
 
-**RF09**   Download do documento final assinado (PDF) após todos os signatários concluírem.
+**RF09**   Histórico de “Últimos Documentos” para cada usuário (10 itens), com título, data de envio e status geral.
 
-**RF10**   Histórico de “Últimos Documentos” para cada usuário (10 itens), com título, data de envio e status geral.
+**RF10**   Reenvio de convite ao signatário atual e cancelamento de fluxo antes da conclusão (apenas pelo proprietário).
 
-**RF11**   Reenvio de convite ao signatário atual e cancelamento de fluxo antes da conclusão (apenas pelo proprietário).
+**RF11**   Registro de logs de auditoria para cada ação relevante (upload, envio, assinatura, download, cancelamento).
 
-**RF12**   Registro de logs de auditoria para cada ação relevante (upload, envio, assinatura, download, cancelamento).
-
-**RF13**   Perfil de usuário com informações básicas e lista de documentos enviados (acessível apenas após login).
+**RF12**   Perfil de usuário com informações básicas e lista de documentos enviados (acessível apenas após login).
 
 ### Requisitos Não Funcionais:
 
