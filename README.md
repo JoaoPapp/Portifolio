@@ -142,29 +142,55 @@ O diagrama de classes mostra duas classes principais: User, que representa o usu
 
 ### Requisitos Funcionais:
 
-**RF01:** : O sistema deve permitir o upload de documentos nos formatos PDF e DOCX.
+**RF01**   Requisitos Funcionais (RF):
 
-**RF02:** O sistema deve permitir o cadastro de usuários e controle de permissões.
+**RF02**   Autenticação de usuários (login e logout via Firebase Auth).
 
-**RF03:** O sistema deve permitir a definição da ordem de assinaturas.
+**RF03**   Upload de documentos nos formatos PDF e DOCX.
 
-**RF04:** O sistema deve integrar-se com uma API de assinatura digital (Gov.br).
+**RF04**   Cadastro de signatários com nome, CPF/CNPJ, e-mail e definição de ordem de assinatura.
 
-**RF05:** O sistema deve enviar notificações quando uma assinatura for requerida.
+**RF05**   Início do fluxo de assinatura: criação de envelope no serviço externo (Autentique/DocuSign).
 
-**RF06:** O sistema deve permitir a consulta do status do documento.
+**RF06**   Envio automático de e-mail ao signatário ativo com link de assinatura.
 
-**RF07:** O sistema deve permitir o download do documento assinado.
+**RF07**   Recebimento de webhook para confirmação de assinatura e avanço ao próximo signatário.
+
+**RF08**   Exibição do status de cada signatário (pendente, assinado, ignorado) em tempo real.
+
+**RF09**   Download do documento final assinado (PDF) após todos os signatários concluírem.
+
+**RF10**   Histórico de “Últimos Documentos” para cada usuário (10 itens), com título, data de envio e status geral.
+
+**RF11**   Reenvio de convite ao signatário atual e cancelamento de fluxo antes da conclusão (apenas pelo proprietário).
+
+**RF12**   Registro de logs de auditoria para cada ação relevante (upload, envio, assinatura, download, cancelamento).
+
+**RF13**   Perfil de usuário com informações básicas e lista de documentos enviados (acessível apenas após login).
 
 ### Requisitos Não Funcionais:
 
-**RNF01:** O sistema deve ser responsivo e acessível via mobile e web.
+**RF01**   O aplicativo deve suportar Android 8.0+ e iOS 12+, adaptando-se a diferentes tamanhos de tela.
 
-**RNF02:** O tempo de resposta para carregamento de documentos não deve exceder 3 segundos.
+**RF02**   Tempo de carregamento da lista de “Últimos Documentos” inferior a 1 segundo.
 
-**RNF03:** A comunicação entre os serviços deve ser segura e criptografada.
+**RF03**   Tempo para iniciar upload de arquivo de até 20 MB não deve exceder 3 segundos em conexão móvel.
 
-**RNF04:** O sistema deve armazenar logs de assinaturas para auditoria.
+**RF04**   Todas as comunicações (Flutter → backend e backend → API externa) devem usar HTTPS (TLS 1.2+).
+
+**RF05**   Chaves de API e segredos devem ficar em arquivo .env (não comitados) e carregados via flutter_dotenv.
+
+**RF06**   Backend stateless em contêiner Docker, escalável horizontalmente; banco PostgreSQL com réplica de leitura.
+
+**RF07**   Documentos em repouso (AWS S3) devem estar criptografados e acessíveis por URLs pré-assinadas com expiração.
+
+**RF08**   O código deve seguir práticas de “clean code” e estar coberto por testes unitários (≥ 80 %).
+
+**RF09**   O aplicativo deve apresentar feedback visual (spinners, snackbars) em operações que demorem mais de 1 segundo.
+
+**RF10**   Funcionalidade offline para exibir o calendário de assinaturas já baixado, sincronizando quando reconectar.
+
+**RF11**   Monitoramento de métricas (Prometheus/Grafana) e captura de crashes via Firebase Crashlytics.
 
 ---
 
