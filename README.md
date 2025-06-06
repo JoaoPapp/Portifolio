@@ -148,7 +148,7 @@ O diagrama de classes mostra duas classes principais: User, que representa o usu
 
 **RF03**   Cadastro de signatários com nome, CPF/CNPJ, e-mail e definição de ordem de assinatura.
 
-**RF04**   Início do fluxo de assinatura: criação de envelope no serviço externo (Autentique/DocuSign).
+**RF04**   Início do fluxo de assinatura: criação de envelope no serviço externo (Autentique).
 
 **RF05**   Envio automático de e-mail ao signatário ativo com link de assinatura.
 
