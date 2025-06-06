@@ -14,7 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # state management
-  provider: ^6.0.5
+  get: ^4.6.6
 
   # HTTP + upload
   dio: ^5.1.2
