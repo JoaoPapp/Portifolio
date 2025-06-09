@@ -1,104 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:portifolio/screens/create_account_screen.dart'; // Importe a tela de criação
+import '../controllers/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _loading = false;
-  String? _errorMessage;
-
-  Future<void> _signIn() async {
-    setState(() {
-      _loading = true;
-      _errorMessage = null;
-    });
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      // Se chegou aqui, login foi bem-sucedido:
-      // Redireciona para a UploadScreen, substituindo essa rota
-      Navigator.pushReplacementNamed(context, '/upload');
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = e.message;
-      });
-    } finally {
-      setState(() {
-        _loading = false;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Controladores de texto para os campos
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    // Acessa o AuthController que já está na memória
+    final AuthController authController = Get.find();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Senha',
-                prefixIcon: Icon(Icons.lock),
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (_errorMessage != null) ...[
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Logo ou Título
+              Icon(Icons.lock_open_rounded, size: 80, color: Colors.blue),
+              const SizedBox(height: 16),
               Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                'Bem-vindo ao FlowSign',
+                style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
-            ],
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _signIn,
-                child:
-                    _loading
-                        ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                        : const Text('Entrar'),
+              const SizedBox(height: 32),
+              
+              // Campo de Email
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () {
-                // Se quiser abrir uma tela de cadastro de usuário, faça aqui:
-              },
-              child: const Text('Criar conta'),
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // Campo de Senha
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Senha',
+                  prefixIcon: Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Widget para exibir a mensagem de erro do controller
+              Obx(() {
+                if (authController.errorMessage.value != null) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Text(
+                      authController.errorMessage.value!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink(); // Não mostra nada se não houver erro
+              }),
+              
+              // Botão de Entrar
+              Obx(() {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: authController.isLoading.value
+                      ? null // Desabilita o botão enquanto carrega
+                      : () {
+                          authController.signIn(
+                            email: emailController.text.trim(),
+                            password: passwordController.text,
+                          );
+                        },
+                  child: authController.isLoading.value
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('Entrar'),
+                );
+              }),
+              const SizedBox(height: 16),
+
+              // Botão para Criar Conta
+              TextButton(
+                onPressed: () {
+                  // Navegação para a tela de cadastro usando GetX
+                  Get.to(() => const CreateAccountScreen());
+                },
+                child: const Text('Criar conta'),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,55 +1,133 @@
 import 'dart:io';
-import 'package:dio/dio.dart';
-import 'package:portifolio/models/user.dart';
-import '../models/document.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:portifolio/models/document.dart';
+import 'package:portifolio/models/user.dart'; // Mantive seu modelo User
+import 'package:dio/dio.dart' as dio;
 
 class ApiService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://sua-api'));
+  late GraphQLClient _client;
 
-  /// Busca todos os documentos disponíveis
-  Future<List<Document>> fetchDocuments() async {
-    final resp = await _dio.get('/documents');
-    return (resp.data as List<dynamic>)
-        .map((json) => Document.fromJson(json as Map<String, dynamic>))
-        .toList();
-  }
+  ApiService() {
+    final HttpLink httpLink = HttpLink(
+      'https://api.autentique.com.br/v2/graphql',
+    );
 
-  /// Realiza upload de um documento e lista de IDs de usuários a assinar
-  Future<void> uploadDocument(File pdf, List<String> signerIds) async {
-    final form = FormData.fromMap({
-      'file': await MultipartFile.fromFile(
-        pdf.path,
-        filename: pdf.uri.pathSegments.last,
-      ),
-      'signers': signerIds,
-    });
-    await _dio.post('/documents', data: form);
-  }
+    final String? apiToken = dotenv.env['AUTENTIQUE_API_KEY'];
 
-  /// Chama o endpoint que inicia o processo de assinatura via Gov.br
-  Future<String> startGovBrFlow(String documentId, String signerId) async {
-    final resp = await _dio.post('/documents/$documentId/sign/$signerId');
-    return resp.data['govBrUrl'] as String;
-  }
+    final AuthLink authLink = AuthLink(
+      getToken: () async => 'Bearer $apiToken',
+    );
 
-  /// Confirma a assinatura de um usuário com o token obtido do Gov.br
-  Future<void> markAsSigned(
-    String documentId,
-    String signerId,
-    String token,
-  ) async {
-    await _dio.post(
-      '/documents/$documentId/confirm-sign',
-      data: {'signerId': signerId, 'token': token},
+    final Link link = authLink.concat(httpLink);
+
+    _client = GraphQLClient(
+      cache: GraphQLCache(),
+      link: link,
     );
   }
 
-  /// >>>>>>>>>>>>>>>>>>>>>
-  /// Busca todos os usuários para seleção de signatários
+  // >>>>>>>>>>>>> INÍCIO DA NOVA FUNÇÃO <<<<<<<<<<<<<<<<<
+  /// Busca todos os contatos (usuários) salvos na sua conta Autentique
   Future<List<User>> fetchUsers() async {
-    final resp = await _dio.get('/users');
-    return (resp.data as List<dynamic>)
-        .map((json) => User.fromJson(json as Map<String, dynamic>))
-        .toList();
+    // Consulta GraphQL para listar contatos.
+    // NOTA: A API do Autentique pode chamar de "contacts". Estou assumindo
+    // os campos 'name' e 'email' para compatibilidade com seu modelo 'User'.
+    final String query = """
+      query ListContacts {
+        contacts(limit: 100) {
+          data {
+            id
+            name
+            email
+          }
+        }
+      }
+    """;
+
+    final QueryOptions options = QueryOptions(document: gql(query));
+    final QueryResult result = await _client.query(options);
+
+    if (result.hasException) {
+      print(result.exception.toString());
+      throw result.exception!;
+    }
+
+    final List<dynamic> contactsJson = result.data?['contacts']?['data'] ?? [];
+    
+    // Mapeia a resposta para a sua lista de User
+    return contactsJson.map((json) => User.fromJson(json)).toList();
+  }
+  // >>>>>>>>>>>>> FIM DA NOVA FUNÇÃO <<<<<<<<<<<<<<<<<
+
+
+  /// Busca todos os documentos disponíveis
+  Future<List<Document>> fetchDocuments() async {
+    final String query = """
+      query ListDocuments {
+        documents(limit: 50) {
+          data {
+            id
+            name
+            signatures {
+              public_id
+              name
+              email
+              created_at
+              signed_at
+            }
+          }
+        }
+      }
+    """;
+
+    final QueryOptions options = QueryOptions(document: gql(query));
+    final QueryResult result = await _client.query(options);
+
+    if (result.hasException) {
+      print(result.exception.toString());
+      throw result.exception!;
+    }
+
+    final List<dynamic> documentsJson = result.data?['documents']?['data'] ?? [];
+    return documentsJson.map((json) => Document.fromJson(json)).toList();
+  }
+
+  /// Realiza upload de um documento para criar na Autentique
+  Future<void> uploadDocument(File pdf, String documentName) async {
+    final String mutation = """
+      mutation CreateDocument(\$file: Upload!, \$document: DocumentInput!) {
+        createDocument(file: \$file, document: \$document) {
+          id
+          name
+        }
+      }
+    """;
+
+    final dio.MultipartFile multipartFile = await dio.MultipartFile.fromFile(
+      pdf.path,
+      filename: pdf.path.split('/').last,
+    );
+
+    final Map<String, dynamic> variables = {
+      'file': multipartFile,
+      'document': {
+        'name': documentName,
+      }
+    };
+
+    final MutationOptions options = MutationOptions(
+      document: gql(mutation),
+      variables: variables,
+    );
+    
+    final QueryResult result = await _client.mutate(options);
+
+    if (result.hasException) {
+      print(result.exception.toString());
+      throw result.exception!;
+    }
+    
+    print('Documento criado: ${result.data?['createDocument']?['name']}');
   }
 }

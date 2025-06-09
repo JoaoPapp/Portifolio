@@ -42,7 +42,6 @@ class _SignatureFlowScreenState extends State<SignatureFlowScreen> {
             ),
           ),
 
-          // Aqui entraria o seu WebView ou fluxo Gov.br/DocuSign…
           Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
