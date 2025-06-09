@@ -21,7 +21,7 @@ class FlowSignApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'FlowSign',
       theme: ThemeData(primarySwatch: Colors.blue),
-      //initialBinding: InitialBindings(),
+      initialBinding: InitialBindings(),
       home: const LoginScreen(),
       getPages: [
         GetPage(name: '/login', page: () => const LoginScreen()),
