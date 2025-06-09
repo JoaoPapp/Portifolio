@@ -54,13 +54,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               const SizedBox(height: 32),
               // Campo Nome Completo
               TextFormField(
-                controller: fullNameController, // Agora usa o controller do State
+                controller:
+                    fullNameController, // Agora usa o controller do State
                 decoration: const InputDecoration(
                   labelText: 'Nome Completo',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
-                keyboardType: TextInputType.name,
+                keyboardType: TextInputType.text,
               ),
               const SizedBox(height: 16),
               // Campo CPF
@@ -87,7 +88,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               const SizedBox(height: 16),
               // Campo Senha
               TextFormField(
-                controller: passwordController, // Agora usa o controller do State
+                controller:
+                    passwordController, // Agora usa o controller do State
                 decoration: const InputDecoration(
                   labelText: 'Senha',
                   border: OutlineInputBorder(),
@@ -104,23 +106,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: authController.isLoading.value
-                      ? null
-                      : () {
-                          authController.createAccount(
-                            fullName: fullNameController.text.trim(),
-                            cpf: cpfController.text.trim(),
-                            email: emailController.text.trim(),
-                            password: passwordController.text.trim(),
-                          );
-                        },
-                  child: authController.isLoading.value
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Criar Conta'),
+                  onPressed:
+                      authController.isLoading.value
+                          ? null
+                          : () {
+                            authController.createAccount(
+                              fullName: fullNameController.text.trim(),
+                              cpf: cpfController.text.trim(),
+                              email: emailController.text.trim(),
+                              password: passwordController.text.trim(),
+                            );
+                          },
+                  child:
+                      authController.isLoading.value
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Text('Criar Conta'),
                 );
               }),
             ],

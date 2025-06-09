@@ -1,11 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 
 class AuthController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance; // Agora será usado
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   final user = Rxn<User>();
   var isLoading = false.obs;
@@ -28,6 +28,7 @@ class AuthController extends GetxController {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       Get.offAllNamed('/upload');
     } on FirebaseAuthException catch (e) {
+      print("!!! ERRO DE LOGIN (FirebaseAuthException): Código: ${e.code}, Mensagem: ${e.message}");
       if (e.code == 'user-not-found' ||
           e.code == 'wrong-password' ||
           e.code == 'invalid-credential') {
@@ -36,49 +37,51 @@ class AuthController extends GetxController {
         errorMessage.value = 'Ocorreu um erro ao fazer login.';
       }
     } catch (e) {
+      print("!!! ERRO DE LOGIN (Exceção Genérica): ${e.toString()}");
       errorMessage.value = 'Ocorreu um erro inesperado.';
     } finally {
       isLoading(false);
     }
   }
 
-  // >>>>>>>>>>>>> INÍCIO DA FUNÇÃO CORRIGIDA <<<<<<<<<<<<<<<<<
+  // >>>>>>>>>>>>> FUNÇÃO ATUALIZADA COM PRINTS DE DEPURAÇÃO <<<<<<<<<<<<<<<<<
   Future<void> createAccount({
     required String fullName,
     required String cpf,
     required String email,
     required String password,
   }) async {
-    // Validação inicial
+    print("--- 1. Função createAccount iniciada ---");
+    print("Dados recebidos -> Nome: $fullName, CPF: $cpf, Email: $email");
+
     if (fullName.isEmpty || cpf.isEmpty || email.isEmpty || password.isEmpty) {
-      Get.snackbar(
-        "Erro",
-        "Todos os campos são obrigatórios.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      print("!!! ERRO: Validação falhou. Pelo menos um campo está vazio.");
+      Get.snackbar("Erro", "Todos os campos são obrigatórios.", snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
     try {
-      isLoading(true); // Ativa o feedback de loading
+      print("--- 2. Ativando isLoading e iniciando o bloco try... ---");
+      isLoading(true);
 
-      // 1. Cria o usuário no Firebase Authentication
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      print("--- 3. Chamando 'createUserWithEmailAndPassword' no Firebase... ---");
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      print("--- 4. SUCESSO! Usuário criado na autenticação: ${userCredential.user?.uid} ---");
 
-      // 2. Salva os dados adicionais no Cloud Firestore
       if (userCredential.user != null) {
-        // Usa a variável _db que antes não estava sendo utilizada
+        print("--- 5. Salvando dados adicionais no Firestore... ---");
         await _db.collection("users").doc(userCredential.user!.uid).set({
           'fullName': fullName,
           'cpf': cpf,
           'email': email,
           'createdAt': Timestamp.now(),
         });
+        print("--- 6. SUCESSO! Dados salvos no Firestore. ---");
       }
-
-      isLoading(false); // Desativa o loading
-      Get.back(); // Volta para a tela de login
+      
+      isLoading(false);
+      Get.back();
       Get.snackbar(
         "Sucesso!",
         "Conta criada com sucesso. Por favor, faça o login.",
@@ -86,9 +89,11 @@ class AuthController extends GetxController {
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
+      print("--- 7. Função finalizada com SUCESSO. ---");
+
     } on FirebaseAuthException catch (e) {
       isLoading(false);
-      // Trata erros específicos do Firebase
+      print("!!! ERRO (FirebaseAuthException): Código: ${e.code} | Mensagem: ${e.message}");
       Get.snackbar(
         "Erro ao criar conta",
         e.message ?? "Ocorreu um erro desconhecido.",
@@ -98,6 +103,7 @@ class AuthController extends GetxController {
       );
     } catch (e) {
       isLoading(false);
+      print("!!! ERRO (Exceção Genérica): ${e.toString()}");
       Get.snackbar(
         "Erro",
         "Ocorreu um erro inesperado.",
@@ -107,8 +113,7 @@ class AuthController extends GetxController {
       );
     }
   }
-  // >>>>>>>>>>>>> FIM DA FUNÇÃO CORRIGIDA <<<<<<<<<<<<<<<<<
-
+  
   Future<void> signOut() async {
     await _auth.signOut();
   }
