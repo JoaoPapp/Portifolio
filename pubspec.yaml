@@ -42,3 +42,7 @@ flutter:
 
   assets:
     - .env
+
+dependency_overrides:
+  firebase_core_platform_interface: 5.0.0
+  firebase_auth_platform_interface: 7.0.0

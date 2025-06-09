@@ -28,7 +28,9 @@ class AuthController extends GetxController {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       Get.offAllNamed('/upload');
     } on FirebaseAuthException catch (e) {
-      print("!!! ERRO DE LOGIN (FirebaseAuthException): Código: ${e.code}, Mensagem: ${e.message}");
+      print(
+        "!!! ERRO DE LOGIN (FirebaseAuthException): Código: ${e.code}, Mensagem: ${e.message}",
+      );
       if (e.code == 'user-not-found' ||
           e.code == 'wrong-password' ||
           e.code == 'invalid-credential') {
@@ -44,7 +46,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // >>>>>>>>>>>>> FUNÇÃO ATUALIZADA COM PRINTS DE DEPURAÇÃO <<<<<<<<<<<<<<<<<
   Future<void> createAccount({
     required String fullName,
     required String cpf,
@@ -56,7 +57,11 @@ class AuthController extends GetxController {
 
     if (fullName.isEmpty || cpf.isEmpty || email.isEmpty || password.isEmpty) {
       print("!!! ERRO: Validação falhou. Pelo menos um campo está vazio.");
-      Get.snackbar("Erro", "Todos os campos são obrigatórios.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        "Erro",
+        "Todos os campos são obrigatórios.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
@@ -64,10 +69,14 @@ class AuthController extends GetxController {
       print("--- 2. Ativando isLoading e iniciando o bloco try... ---");
       isLoading(true);
 
-      print("--- 3. Chamando 'createUserWithEmailAndPassword' no Firebase... ---");
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      print("--- 4. SUCESSO! Usuário criado na autenticação: ${userCredential.user?.uid} ---");
+      print(
+        "--- 3. Chamando 'createUserWithEmailAndPassword' no Firebase... ---",
+      );
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
+      print(
+        "--- 4. SUCESSO! Usuário criado na autenticação: ${userCredential.user?.uid} ---",
+      );
 
       if (userCredential.user != null) {
         print("--- 5. Salvando dados adicionais no Firestore... ---");
@@ -79,7 +88,7 @@ class AuthController extends GetxController {
         });
         print("--- 6. SUCESSO! Dados salvos no Firestore. ---");
       }
-      
+
       isLoading(false);
       Get.back();
       Get.snackbar(
@@ -90,10 +99,11 @@ class AuthController extends GetxController {
         colorText: Colors.white,
       );
       print("--- 7. Função finalizada com SUCESSO. ---");
-
     } on FirebaseAuthException catch (e) {
       isLoading(false);
-      print("!!! ERRO (FirebaseAuthException): Código: ${e.code} | Mensagem: ${e.message}");
+      print(
+        "!!! ERRO (FirebaseAuthException): Código: ${e.code} | Mensagem: ${e.message}",
+      );
       Get.snackbar(
         "Erro ao criar conta",
         e.message ?? "Ocorreu um erro desconhecido.",
@@ -113,7 +123,7 @@ class AuthController extends GetxController {
       );
     }
   }
-  
+
   Future<void> signOut() async {
     await _auth.signOut();
   }
