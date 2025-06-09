@@ -14,7 +14,6 @@ class DocumentController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadDocuments();
   }
 
   Future<void> loadDocuments() async {

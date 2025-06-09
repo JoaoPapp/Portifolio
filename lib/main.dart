@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'config/initial_bindings.dart';
-import 'widgets/auth_wrapper.dart';
 import 'screens/login_screen.dart';
 import 'screens/upload_screen.dart';
 
@@ -22,8 +21,8 @@ class FlowSignApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'FlowSign',
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialBinding: InitialBindings(),
-      home: const AuthWrapper(),
+      //initialBinding: InitialBindings(),
+      home: const LoginScreen(),
       getPages: [
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/upload', page: () => const UploadScreen()),
