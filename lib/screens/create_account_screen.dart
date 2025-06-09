@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/auth_controller.dart'; 
+import '../controllers/auth_controller.dart';
 
-class CreateAccountScreen extends StatelessWidget {
+// 1. Convertemos para StatefulWidget
+class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
 
   @override
+  State<CreateAccountScreen> createState() => _CreateAccountScreenState();
+}
+
+class _CreateAccountScreenState extends State<CreateAccountScreen> {
+  // 2. Declaramos os controllers aqui, fora do método build.
+  //    Eles serão criados apenas uma vez.
+  final fullNameController = TextEditingController();
+  final cpfController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  // Acessamos o AuthController uma vez aqui
+  final AuthController authController = Get.find();
+
+  // 3. É uma boa prática limpar os controllers quando a tela for destruída
+  @override
+  void dispose() {
+    fullNameController.dispose();
+    cpfController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Controladores para pegar o texto dos campos
-    final fullNameController = TextEditingController();
-    final cpfController = TextEditingController();
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-
-    // Acessando nosso AuthController que já foi injetado pelo GetX
-    final AuthController authController = Get.find();
-
+    // O resto da UI permanece praticamente o mesmo
     return Scaffold(
       appBar: AppBar(
         title: const Text('Criar Conta'),
@@ -36,7 +54,7 @@ class CreateAccountScreen extends StatelessWidget {
               const SizedBox(height: 32),
               // Campo Nome Completo
               TextFormField(
-                controller: fullNameController,
+                controller: fullNameController, // Agora usa o controller do State
                 decoration: const InputDecoration(
                   labelText: 'Nome Completo',
                   border: OutlineInputBorder(),
@@ -47,7 +65,7 @@ class CreateAccountScreen extends StatelessWidget {
               const SizedBox(height: 16),
               // Campo CPF
               TextFormField(
-                controller: cpfController,
+                controller: cpfController, // Agora usa o controller do State
                 decoration: const InputDecoration(
                   labelText: 'CPF',
                   border: OutlineInputBorder(),
@@ -58,7 +76,7 @@ class CreateAccountScreen extends StatelessWidget {
               const SizedBox(height: 16),
               // Campo Email
               TextFormField(
-                controller: emailController,
+                controller: emailController, // Agora usa o controller do State
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
@@ -69,7 +87,7 @@ class CreateAccountScreen extends StatelessWidget {
               const SizedBox(height: 16),
               // Campo Senha
               TextFormField(
-                controller: passwordController,
+                controller: passwordController, // Agora usa o controller do State
                 decoration: const InputDecoration(
                   labelText: 'Senha',
                   border: OutlineInputBorder(),
@@ -78,7 +96,7 @@ class CreateAccountScreen extends StatelessWidget {
                 obscureText: true,
               ),
               const SizedBox(height: 24),
-              // Botão de Criar Conta com feedback de loading
+              // Botão de Criar Conta
               Obx(() {
                 return ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -86,11 +104,9 @@ class CreateAccountScreen extends StatelessWidget {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                   ),
-                  // Desabilita o botão enquanto estiver carregando
                   onPressed: authController.isLoading.value
                       ? null
                       : () {
-                          // Chama a função do controller para criar a conta
                           authController.createAccount(
                             fullName: fullNameController.text.trim(),
                             cpf: cpfController.text.trim(),
