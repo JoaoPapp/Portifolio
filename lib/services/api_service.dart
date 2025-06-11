@@ -2,8 +2,9 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:portifolio/models/document.dart';
-import 'package:portifolio/models/user.dart'; 
+import 'package:portifolio/models/user.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ApiService {
   late GraphQLClient _client;
@@ -12,69 +13,28 @@ class ApiService {
     final HttpLink httpLink = HttpLink(
       'https://api.autentique.com.br/v2/graphql',
     );
-
     final String? apiToken = dotenv.env['AUTENTIQUE_API_KEY'];
-
     final AuthLink authLink = AuthLink(
       getToken: () async => 'Bearer $apiToken',
     );
-
     final Link link = authLink.concat(httpLink);
 
-    _client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: link,
-    );
+    _client = GraphQLClient(cache: GraphQLCache(), link: link);
   }
 
-  // >>>>>>>>>>>>> INÍCIO DA NOVA FUNÇÃO <<<<<<<<<<<<<<<<<
-  /// Busca todos os contatos (usuários) salvos na sua conta Autentique
-  Future<List<User>> fetchUsers() async {
-    // Consulta GraphQL para listar contatos.
-    // NOTA: A API do Autentique pode chamar de "contacts". Estou assumindo
-    // os campos 'name' e 'email' para compatibilidade com seu modelo 'User'.
-    final String query = """
-      query ListContacts {
-        contacts(limit: 100) {
-          data {
-            id
-            name
-            email
-          }
-        }
-      }
-    """;
-
-    final QueryOptions options = QueryOptions(document: gql(query));
-    final QueryResult result = await _client.query(options);
-
-    if (result.hasException) {
-      print(result.exception.toString());
-      throw result.exception!;
-    }
-
-    final List<dynamic> contactsJson = result.data?['contacts']?['data'] ?? [];
-    
-    // Mapeia a resposta para a sua lista de User
-    return contactsJson.map((json) => User.fromJson(json)).toList();
-  }
-  // >>>>>>>>>>>>> FIM DA NOVA FUNÇÃO <<<<<<<<<<<<<<<<<
-
-
-  /// Busca todos os documentos disponíveis
+  /// Busca os documentos da API do Autentique
   Future<List<Document>> fetchDocuments() async {
-    final String query = """
-      query ListDocuments {
-        documents(limit: 50) {
+    const String query = """
+      query ListAllDocuments {
+        documents(limit: 10, page: 1) {
           data {
             id
             name
+            created_at
             signatures {
               public_id
               name
               email
-              created_at
-              signed_at
             }
           }
         }
@@ -89,45 +49,29 @@ class ApiService {
       throw result.exception!;
     }
 
-    final List<dynamic> documentsJson = result.data?['documents']?['data'] ?? [];
+    final List<dynamic> documentsJson =
+        result.data?['documents']?['data'] ?? [];
     return documentsJson.map((json) => Document.fromJson(json)).toList();
   }
 
-  /// Realiza upload de um documento para criar na Autentique
-  Future<void> uploadDocument(File pdf, String documentName) async {
-    final String mutation = """
-      mutation CreateDocument(\$file: Upload!, \$document: DocumentInput!) {
-        createDocument(file: \$file, document: \$document) {
-          id
-          name
-        }
-      }
-    """;
+  // Mantemos a função para buscar usuários do nosso próprio Firestore
+  Future<List<User>> fetchUsers() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+      if (snapshot.docs.isEmpty) return [];
 
-    final dio.MultipartFile multipartFile = await dio.MultipartFile.fromFile(
-      pdf.path,
-      filename: pdf.path.split('/').last,
-    );
+      final users =
+          snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return User.fromJson(data);
+          }).toList();
 
-    final Map<String, dynamic> variables = {
-      'file': multipartFile,
-      'document': {
-        'name': documentName,
-      }
-    };
-
-    final MutationOptions options = MutationOptions(
-      document: gql(mutation),
-      variables: variables,
-    );
-    
-    final QueryResult result = await _client.mutate(options);
-
-    if (result.hasException) {
-      print(result.exception.toString());
-      throw result.exception!;
+      return users;
+    } catch (e) {
+      print("!!! ERRO ao buscar usuários do Firestore: ${e.toString()}");
+      return [];
     }
-    
-    print('Documento criado: ${result.data?['createDocument']?['name']}');
   }
 }

@@ -1,81 +1,101 @@
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import necessário
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/document.dart';
 import '../services/api_service.dart';
-import 'auth_controller.dart'; // Import necessário para pegar o usuário logado
+import 'auth_controller.dart';
 
 class DocumentController extends GetxController {
+  // A ApiService é injetada para uso futuro com o Autentique
   final ApiService api;
+  DocumentController(this.api);
 
   var documents = <Document>[].obs;
   var isLoading = false.obs;
   var errorMessage = RxnString();
 
-  DocumentController(this.api);
-
   @override
   void onInit() {
     super.onInit();
+    // Ouve as mudanças no estado de autenticação para carregar/limpar os documentos.
+    ever(Get.find<AuthController>().user, (user) {
+      if (user != null) {
+        loadDocumentsFromFirestore(user.uid);
+      } else {
+        documents.clear();
+      }
+    });
   }
 
-  Future<void> loadDocuments() async {
-    try {
-      isLoading(true);
-      errorMessage.value = null;
-      var result = await api.fetchDocuments();
-      documents.assignAll(result);
-    } catch (e) {
-      errorMessage.value = "Falha ao carregar documentos.";
-    } finally {
-      isLoading(false);
-    }
+  /// Busca dados do FIRESTORE em tempo real.
+  void loadDocumentsFromFirestore(String userId) {
+    isLoading(true);
+    FirebaseFirestore.instance
+        .collection('documents')
+        .where(
+          'ownerId',
+          isEqualTo: userId,
+        ) // Mostra apenas os docs do usuário logado
+        .orderBy('createdAt', descending: true)
+        .snapshots() // Ouve as mudanças em tempo real
+        .listen(
+          (snapshot) {
+            // Mapeia os documentos do Firestore para a sua lista reativa
+            documents.value =
+                snapshot.docs
+                    .map((doc) => Document.fromFirestore(doc))
+                    .toList();
+            isLoading(false);
+          },
+          onError: (error) {
+            print("Erro ao carregar documentos: $error");
+            errorMessage.value = "Falha ao carregar documentos.";
+            isLoading(false);
+          },
+        );
   }
 
-  // >>>>>>>>>> INÍCIO DA NOVA FUNÇÃO <<<<<<<<<<
   /// Cria um novo fluxo de assinatura no Firestore
   Future<void> createDocumentWorkflow({
     required String documentName,
-    required List<Map<String, String>> signersInfo, // Recebe uma lista de signatários
+    required List<Map<String, String>> signersInfo,
   }) async {
     try {
-      isLoading(true); // Ativa o loading
-
-      // Pega o ID do usuário logado a partir do AuthController
+      isLoading(true);
       final user = Get.find<AuthController>().user.value;
       if (user == null) {
         throw Exception("Usuário não autenticado.");
       }
 
-      // 1. Transforma a lista de informações dos signatários para o formato do Firestore
       List<Map<String, dynamic>> signersListForFirestore = [];
       for (int i = 0; i < signersInfo.length; i++) {
         signersListForFirestore.add({
           'name': signersInfo[i]['name']!,
           'email': signersInfo[i]['email']!,
-          'status': 'pendente', // Status inicial para cada signatário
-          'order': i + 1,       // A ordem sequencial da assinatura
+          'status': 'pendente',
+          'order': i + 1,
         });
       }
 
-      // 2. Monta o documento principal com o campo 'signers' como uma LISTA (Array)
       final documentData = {
         'name': documentName,
         'ownerId': user.uid,
-        'status': 'em_andamento', // Status geral do documento
+        'status': 'em_andamento',
         'createdAt': Timestamp.now(),
-        'storagePath': 'documentos/${user.uid}/$documentName', // Exemplo de caminho
-        'signers': signersListForFirestore, // Atribuindo a lista aqui
+        'storagePath': 'documentos/${user.uid}/$documentName',
+        'signers': signersListForFirestore,
       };
-      
-      // 3. Salva o novo documento na coleção 'documents' do Firestore
-      await FirebaseFirestore.instance.collection('documents').add(documentData);
 
+      await FirebaseFirestore.instance
+          .collection('documents')
+          .add(documentData);
       Get.snackbar("Sucesso!", "Novo fluxo de assinatura criado.");
-
     } catch (e) {
-      Get.snackbar("Erro", "Falha ao criar o fluxo de assinatura: ${e.toString()}");
+      Get.snackbar(
+        "Erro",
+        "Falha ao criar o fluxo de assinatura: ${e.toString()}",
+      );
     } finally {
-      isLoading(false); // Desativa o loading
+      isLoading(false);
     }
   }
 }

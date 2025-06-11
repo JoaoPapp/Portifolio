@@ -1,11 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../models/user.dart';
-import '../services/api_service.dart';
-import 'signature_flow_screen.dart';
+import 'package:get/get.dart';
+import '../controllers/document_controller.dart';
+
+// Um modelo simples para guardar os dados do signatário na tela
+class SignerInfo {
+  final String name;
+  final String cpf;
+  final String email;
+
+  SignerInfo({required this.name, required this.cpf, required this.email});
+}
 
 class SignersSelectionScreen extends StatefulWidget {
-  final File file;
+  final File file; // O arquivo PDF/DOCX que veio da tela anterior
   const SignersSelectionScreen({required this.file, super.key});
 
   @override
@@ -13,84 +21,177 @@ class SignersSelectionScreen extends StatefulWidget {
 }
 
 class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
-  final ApiService api = ApiService();
-  List<User> _contacts = [];
-  Set<String> _selectedIds = {};
-  bool _loading = true;
+  // Lista local para guardar os signatários que o usuário adicionar
+  final List<SignerInfo> _signers = [];
+  final DocumentController docController = Get.find();
+
+  // Função para mostrar o pop-up (dialog) de adicionar signatário
+  Future<void> _showAddSignerDialog() async {
+    final nameController = TextEditingController();
+    final cpfController = TextEditingController();
+    final emailController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Adicionar Novo Signatário'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome Completo',
+                    ),
+                    validator:
+                        (value) =>
+                            (value?.isEmpty ?? true)
+                                ? 'Campo obrigatório'
+                                : null,
+                  ),
+                  TextFormField(
+                    controller: cpfController,
+                    decoration: const InputDecoration(labelText: 'CPF'),
+                    keyboardType: TextInputType.number,
+                    validator:
+                        (value) =>
+                            (value?.isEmpty ?? true)
+                                ? 'Campo obrigatório'
+                                : null,
+                  ),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    keyboardType: TextInputType.emailAddress,
+                    validator:
+                        (value) =>
+                            (value?.isEmpty ?? true)
+                                ? 'Campo obrigatório'
+                                : null,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Adicionar'),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  setState(() {
+                    _signers.add(
+                      SignerInfo(
+                        name: nameController.text,
+                        cpf: cpfController.text,
+                        email: emailController.text,
+                      ),
+                    );
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
-  void initState() {
-    super.initState();
-    _loadContacts();
-  }
-
-  Future<void> _loadContacts() async {
-    final users = await api.fetchUsers(); // endpoint GET /users
-    setState(() {
-      _contacts = users;
-      _loading = false;
-    });
-  }
-
-  void _toggleSigner(String id) {
-    setState(() {
-      if (_selectedIds.contains(id))
-        _selectedIds.remove(id);
-      else
-        _selectedIds.add(id);
-    });
-  }
-
-  @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Escolha os Signatários')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _contacts.length,
-                    itemBuilder: (_, i) {
-                      final u = _contacts[i];
-                      final sel = _selectedIds.contains(u.id);
-                      return CheckboxListTile(
-                        value: sel,
-                        title: Text(u.name),
-                        subtitle: Text(u.email),
-                        onChanged: (_) => _toggleSigner(u.id),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ElevatedButton(
-                    onPressed: _selectedIds.isEmpty
-                        ? null
-                        : () {
-                            // Filtra a lista de User pelo id
-                            final chosen = _contacts
-                                .where((u) => _selectedIds.contains(u.id))
-                                .toList();
-                            Navigator.of(ctx).push(
-                              MaterialPageRoute(
-                                builder: (_) => SignatureFlowScreen(
-                                  pdfFile: widget.file,
-                                  signers: chosen,
-                                ),
-                              ),
-                            );
-                          },
-                    child: const Text('Enviar para Assinatura'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
+      body: Column(
+        children: [
+          // Lista dos signatários já adicionados
+          Expanded(
+            child:
+                _signers.isEmpty
+                    ? const Center(
+                      child: Text(
+                        'Nenhum signatário adicionado.\nClique no botão + para começar.',
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                    : ListView.builder(
+                      itemCount: _signers.length,
+                      itemBuilder: (context, index) {
+                        final signer = _signers[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(child: Text('${index + 1}')),
+                            title: Text(signer.name),
+                            subtitle: Text(signer.email),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  _signers.removeAt(index);
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
+          ),
+          // Botão para enviar para assinatura
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Obx(
+              () => ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
                 ),
-              ],
+                onPressed:
+                    _signers.isEmpty || docController.isLoading.value
+                        ? null // Desabilita o botão se a lista estiver vazia ou carregando
+                        : () {
+                          final signersData =
+                              _signers
+                                  .map(
+                                    (s) => {
+                                      'name': s.name,
+                                      'cpf': s.cpf,
+                                      'email': s.email,
+                                    },
+                                  )
+                                  .toList();
+
+                          // Chama a função do controller para criar o fluxo
+                          docController.createDocumentWorkflow(
+                            documentName: widget.file.path.split('/').last,
+                            signersInfo: signersData,
+                          );
+                        },
+                child:
+                    docController.isLoading.value
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Enviar para Assinatura'),
+              ),
             ),
+          ),
+        ],
+      ),
+      // Botão flutuante para adicionar novos signatários
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddSignerDialog,
+        tooltip: 'Adicionar Signatário',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

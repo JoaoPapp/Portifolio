@@ -1,43 +1,54 @@
-import 'package:portifolio/models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Document {
   final String id;
   final String name;
-  final String url;
-  final List<User> signers; // agora usa User em vez de Signer
-  int currentSignerIndex;
+  final String? ownerId; // Campos agora podem ser nulos para flexibilidade
+  final String? status;
+  final List<dynamic> signers;
+  final Timestamp? createdAt;
 
   Document({
     required this.id,
     required this.name,
-    required this.url,
+    this.ownerId,
+    this.status,
     required this.signers,
-    this.currentSignerIndex = 0,
+    this.createdAt,
   });
 
-  /// Construtor de fábrica para converter JSON em Document
-  factory Document.fromJson(Map<String, dynamic> json) {
+  /// Construtor para dados vindos do Firestore
+  factory Document.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+  ) {
+    final data = snapshot.data() ?? {};
     return Document(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      url: json['url'] as String,
-      currentSignerIndex: json['currentSignerIndex'] as int? ?? 0,
-      signers: (json['signers'] as List<dynamic>)
-          .map((u) => User.fromJson(u as Map<String, dynamic>))
-          .toList(),
+      id: snapshot.id,
+      name: data['name'] ?? 'Nome não definido',
+      ownerId: data['ownerId'],
+      status: data['status'],
+      signers: data['signers'] ?? [],
+      createdAt: data['createdAt'],
     );
   }
 
-  /// Converte para JSON:
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'url': url,
-    'currentSignerIndex': currentSignerIndex,
-    'signers': signers.map((u) => u.toJson()).toList(),
-  };
+  /// Construtor para dados vindos de um JSON (API do Autentique)
+  factory Document.fromJson(Map<String, dynamic> json) {
+    final createdAtString = json['created_at'] as String?;
+    final createdAt =
+        createdAtString != null
+            ? Timestamp.fromDate(DateTime.parse(createdAtString))
+            : null;
 
-  /// Retorna o próximo usuário a assinar ou null se nenhum
-  User? get nextSigner =>
-      currentSignerIndex < signers.length ? signers[currentSignerIndex] : null;
+    return Document(
+      id: json['id'] ?? '',
+      name: json['name'] ?? 'Nome não definido',
+      // Estes campos podem não vir da API do Autentique, então são nulos
+      ownerId: null,
+      status: json['status'],
+      // A API pode retornar 'signatures' em vez de 'signers'
+      signers: json['signatures'] ?? [],
+      createdAt: createdAt,
+    );
+  }
 }
