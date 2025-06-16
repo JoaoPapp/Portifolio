@@ -27,6 +27,8 @@ bin/internal/engine.version
 .project
 .settings/
 .vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
 .ccls-cache
 
 # Flutter repo-specific
@@ -76,8 +78,8 @@ unlinked_spec.ds
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
-**/android/key.properties
 *.jks
+*.keystore
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -141,7 +143,6 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
-!.vscode/settings.json
 
 # Monorepo
 .cipd
@@ -151,15 +152,11 @@ app.*.symbols
 .gclient_previous_custom_vars
 .gclient_previous_sync_commits
 
-# Ignorar pasta build
-/bin/
-/.git/
-/.github/
-/.idea/
-/.vscode/
-/dev/
-/docs/
-/engine/
-/examples/
-/packages/
-/.env/
+# Ignora o arquivo de ambiente com chaves secretas
+.env 
+
+# Ignora o arquivo de configuração do Firebase para Android
+/android/app/google-services.json
+
+# Ignora o arquivo de configuração do Firebase para iOS
+/ios/Runner/GoogleService-Info.plist

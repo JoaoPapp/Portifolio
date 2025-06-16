@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:portifolio/models/document.dart';
 import 'package:portifolio/models/user.dart';
-import 'package:dio/dio.dart' as dio;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ApiService {
