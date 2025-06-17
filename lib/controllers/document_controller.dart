@@ -5,7 +5,6 @@ import '../services/api_service.dart';
 import 'auth_controller.dart';
 
 class DocumentController extends GetxController {
-  // A ApiService é injetada para uso futuro com o Autentique
   final ApiService api;
   DocumentController(this.api);
 
@@ -16,7 +15,6 @@ class DocumentController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Ouve as mudanças no estado de autenticação para carregar/limpar os documentos.
     ever(Get.find<AuthController>().user, (user) {
       if (user != null) {
         loadDocumentsFromFirestore(user.uid);
@@ -26,20 +24,15 @@ class DocumentController extends GetxController {
     });
   }
 
-  /// Busca dados do FIRESTORE em tempo real.
   void loadDocumentsFromFirestore(String userId) {
     isLoading(true);
     FirebaseFirestore.instance
         .collection('documents')
-        .where(
-          'ownerId',
-          isEqualTo: userId,
-        ) // Mostra apenas os docs do usuário logado
+        .where('ownerId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
-        .snapshots() // Ouve as mudanças em tempo real
+        .snapshots()
         .listen(
           (snapshot) {
-            // Mapeia os documentos do Firestore para a sua lista reativa
             documents.value =
                 snapshot.docs
                     .map((doc) => Document.fromFirestore(doc))
@@ -54,7 +47,7 @@ class DocumentController extends GetxController {
         );
   }
 
-  /// Cria um novo fluxo de assinatura no Firestore
+  // >>>>>>>>>>>>> FUNÇÃO ATUALIZADA <<<<<<<<<<<<<<<<<
   Future<void> createDocumentWorkflow({
     required String documentName,
     required List<Map<String, String>> signersInfo,
@@ -85,17 +78,45 @@ class DocumentController extends GetxController {
         'signers': signersListForFirestore,
       };
 
-      await FirebaseFirestore.instance
+      // 1. Salva o documento na coleção 'documents'
+      final newDocumentRef = await FirebaseFirestore.instance
           .collection('documents')
           .add(documentData);
-      Get.snackbar("Sucesso!", "Novo fluxo de assinatura criado.");
-    } catch (e) {
-      Get.snackbar(
-        "Erro",
-        "Falha ao criar o fluxo de assinatura: ${e.toString()}",
+      print(
+        "Documento de fluxo salvo no Firestore com ID: ${newDocumentRef.id}",
       );
-    } finally {
+
+      // 2. >>> INÍCIO DA LÓGICA DE ENVIO DE E-MAIL QUE FALTAVA <<<
+      // Para cada signatário, cria um documento na coleção 'mail'
+      for (var signer in signersInfo) {
+        await FirebaseFirestore.instance.collection('mail').add({
+          'to': [signer['email']],
+          'message': {
+            'subject':
+                'FlowSign: Convite para assinar o documento "$documentName"',
+            'html': """
+              <h1>Olá, ${signer['name']}!</h1>
+              <p>Você foi convidado(a) para assinar o documento "$documentName".</p>
+              <p>Por favor, clique no link abaixo para visualizar e assinar.</p>
+              <p><a href="https://seu-app.com/sign?docId=${newDocumentRef.id}&signerEmail=${signer['email']}">Assinar o Documento</a></p>
+              <p>Obrigado!</p>
+            """,
+          },
+        });
+        print(
+          "Pedido de e-mail para ${signer['email']} criado na coleção 'mail'.",
+        );
+      }
+      // >>> FIM DA LÓGICA DE ENVIO DE E-MAIL <<<
+
       isLoading(false);
+      Get.snackbar(
+        "Sucesso!",
+        "Fluxo de assinatura criado e convites enviados.",
+      );
+    } catch (e) {
+      isLoading(false);
+      Get.snackbar("Erro", "Falha ao criar o fluxo: ${e.toString()}");
     }
   }
 }
