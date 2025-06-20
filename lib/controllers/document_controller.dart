@@ -13,7 +13,6 @@ class DocumentController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = RxnString();
 
-  // >>> NOVO: STREAM DE DOCUMENTOS <<<
   Stream<List<Document>>? _documentsStream;
 
   @override
@@ -21,46 +20,48 @@ class DocumentController extends GetxController {
     super.onInit();
     final authController = Get.find<AuthController>();
 
-    // Ouve as mudanças no status de autenticação do usuário
+    // >>>>> INÍCIO DA MUDANÇA <<<<<
+
+    // 1. Escuta por MUDANÇAS futuras no estado de login (login/logout)
     ever(authController.user, (firebaseUser) {
       if (firebaseUser == null) {
-        // Se o usuário deslogar, limpa a lista de documentos
         documents.clear();
       } else {
-        // Se o usuário logar, busca os documentos dele em tempo real
         _listenToDocuments(firebaseUser.uid);
       }
     });
+
+    // 2. Verifica o ESTADO ATUAL do usuário ao iniciar o controller
+    // Isso resolve o problema de o usuário já estar logado quando o app abre.
+    if (authController.user.value != null) {
+      _listenToDocuments(authController.user.value!.uid);
+    }
+
+    // >>>>> FIM DA MUDANÇA <<<<<
   }
 
-  // >>> NOVO: MÉTODO PARA OUVIR AS MUDANÇAS EM TEMPO REAL <<<
   void _listenToDocuments(String userId) {
     isLoading(true);
     _documentsStream = FirebaseFirestore.instance
         .collection('documents')
-        .where(
-          'ownerId',
-          isEqualTo: userId,
-        ) // Filtra apenas os documentos do usuário logado
-        .orderBy('createdAt', descending: true) // Ordena pelos mais recentes
+        .where('ownerId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
           (snapshot) =>
               snapshot.docs.map((doc) => Document.fromFirestore(doc)).toList(),
         );
 
-    // O bindStream atualiza a lista 'documents' automaticamente
     documents.bindStream(_documentsStream!);
     isLoading(false);
   }
 
-  // Função para criar o documento (continua a mesma)
+  // A função createDocumentWorkflow continua exatamente a mesma
   Future<void> createDocumentWorkflow({
     required File documentFile,
     required List<Map<String, String>> signersInfo,
     required String documentName,
   }) async {
-    // ... (o resto da função createDocumentWorkflow não muda)
     try {
       isLoading(true);
       final user = Get.find<AuthController>().user.value;
@@ -83,7 +84,7 @@ class DocumentController extends GetxController {
                 (s) => {
                   'name': s['name']!,
                   'email': s['email']!,
-                  'status': 'pendente', // Status inicial
+                  'status': 'pendente',
                 },
               )
               .toList();
