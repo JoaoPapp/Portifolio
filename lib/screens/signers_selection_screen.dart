@@ -173,10 +173,11 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
 
                           // Chama a função do controller para criar o fluxo
                           docController.createDocumentWorkflow(
+                            documentFile: widget.file, // Adicione este parâmetro
                             documentName: widget.file.path.split('/').last,
                             signersInfo: signersData,
                           );
-                        },
+                    },
                 child:
                     docController.isLoading.value
                         ? const CircularProgressIndicator(color: Colors.white)

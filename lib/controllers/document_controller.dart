@@ -1,3 +1,4 @@
+import 'dart:io'; // Importe o dart:io para usar o tipo File
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/document.dart';
@@ -14,109 +15,69 @@ class DocumentController extends GetxController {
 
   @override
   void onInit() {
-    super.onInit();
-    ever(Get.find<AuthController>().user, (user) {
-      if (user != null) {
-        loadDocumentsFromFirestore(user.uid);
-      } else {
-        documents.clear();
-      }
-    });
+    // ... (o onInit continua o mesmo)
   }
 
   void loadDocumentsFromFirestore(String userId) {
-    isLoading(true);
-    FirebaseFirestore.instance
-        .collection('documents')
-        .where('ownerId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .listen(
-          (snapshot) {
-            documents.value =
-                snapshot.docs
-                    .map((doc) => Document.fromFirestore(doc))
-                    .toList();
-            isLoading(false);
-          },
-          onError: (error) {
-            print("Erro ao carregar documentos: $error");
-            errorMessage.value = "Falha ao carregar documentos.";
-            isLoading(false);
-          },
-        );
+    // ... (esta função continua a mesma)
   }
 
-  // >>>>>>>>>>>>> FUNÇÃO ATUALIZADA <<<<<<<<<<<<<<<<<
+  // >>> FUNÇÃO ATUALIZADA PARA O NOVO FLUXO <<<
   Future<void> createDocumentWorkflow({
-    required String documentName,
-    required List<Map<String, String>> signersInfo,
+    required File documentFile, // Agora recebe o arquivo
+    required List<Map<String, String>> signersInfo, required String documentName,
   }) async {
     try {
       isLoading(true);
       final user = Get.find<AuthController>().user.value;
-      if (user == null) {
-        throw Exception("Usuário não autenticado.");
+      if (user == null) throw Exception("Usuário não autenticado.");
+
+      // 1. CHAMA A API DO AUTENTIQUE PARA ENVIAR O DOCUMENTO E OS E-MAILS
+      final String? autentiqueDocId = await api.sendDocumentToAutentique(
+        documentFile: documentFile,
+        signers: signersInfo,
+      );
+
+      if (autentiqueDocId == null) {
+        throw Exception(
+          "Não foi possível obter o ID do documento do Autentique.",
+        );
       }
 
-      List<Map<String, dynamic>> signersListForFirestore = [];
-      for (int i = 0; i < signersInfo.length; i++) {
-        signersListForFirestore.add({
-          'name': signersInfo[i]['name']!,
-          'email': signersInfo[i]['email']!,
-          'status': 'pendente',
-          'order': i + 1,
-        });
-      }
+      // 2. SALVA UM REGISTRO NO SEU FIRESTORE PARA CONTROLE INTERNO
+      List<Map<String, dynamic>> signersListForFirestore =
+          signersInfo
+              .map(
+                (s) => {
+                  'name': s['name']!,
+                  'email': s['email']!,
+                  'status': 'pendente',
+                },
+              )
+              .toList();
 
       final documentData = {
-        'name': documentName,
+        'name': documentFile.path.split('/').last,
         'ownerId': user.uid,
         'status': 'em_andamento',
         'createdAt': Timestamp.now(),
-        'storagePath': 'documentos/${user.uid}/$documentName',
+        'autentiqueId':
+            autentiqueDocId, // Guarda o ID do Autentique para referência
         'signers': signersListForFirestore,
       };
 
-      // 1. Salva o documento na coleção 'documents'
-      final newDocumentRef = await FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('documents')
           .add(documentData);
-      print(
-        "Documento de fluxo salvo no Firestore com ID: ${newDocumentRef.id}",
-      );
 
-      // 2. >>> INÍCIO DA LÓGICA DE ENVIO DE E-MAIL QUE FALTAVA <<<
-      // Para cada signatário, cria um documento na coleção 'mail'
-      for (var signer in signersInfo) {
-        await FirebaseFirestore.instance.collection('mail').add({
-          'to': [signer['email']],
-          'message': {
-            'subject':
-                'FlowSign: Convite para assinar o documento "$documentName"',
-            'html': """
-              <h1>Olá, ${signer['name']}!</h1>
-              <p>Você foi convidado(a) para assinar o documento "$documentName".</p>
-              <p>Por favor, clique no link abaixo para visualizar e assinar.</p>
-              <p><a href="https://seu-app.com/sign?docId=${newDocumentRef.id}&signerEmail=${signer['email']}">Assinar o Documento</a></p>
-              <p>Obrigado!</p>
-            """,
-          },
-        });
-        print(
-          "Pedido de e-mail para ${signer['email']} criado na coleção 'mail'.",
-        );
-      }
-      // >>> FIM DA LÓGICA DE ENVIO DE E-MAIL <<<
-
-      isLoading(false);
       Get.snackbar(
         "Sucesso!",
-        "Fluxo de assinatura criado e convites enviados.",
+        "Documento enviado! Os signatários receberão um e-mail em breve.",
       );
     } catch (e) {
+      Get.snackbar("Erro", "Falha ao iniciar o fluxo: ${e.toString()}");
+    } finally {
       isLoading(false);
-      Get.snackbar("Erro", "Falha ao criar o fluxo: ${e.toString()}");
     }
   }
 }

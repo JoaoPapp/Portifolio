@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:dio/dio.dart'
-    as dio; // dio é necessário para o upload do arquivo
+import 'package:dio/dio.dart' as dio; // dio é usado para o upload do arquivo
 import '../models/user.dart';
 
 class ApiService {
@@ -12,14 +11,10 @@ class ApiService {
     final HttpLink httpLink = HttpLink(
       'https://api.autentique.com.br/v2/graphql',
     );
-
-    // Pega a sua chave de API do arquivo .env
     final String? apiToken = dotenv.env['AUTENTIQUE_API_KEY'];
-
     final AuthLink authLink = AuthLink(
       getToken: () async => 'Bearer $apiToken',
     );
-
     final Link link = authLink.concat(httpLink);
 
     _client = GraphQLClient(cache: GraphQLCache(), link: link);
@@ -61,7 +56,6 @@ class ApiService {
                 'email': s['email'],
                 'name': s['name'],
                 'action': 'SIGN', // Define a ação como "assinar"
-                // Aqui você poderia adicionar outros campos como 'cpf' se a API permitir
               },
             )
             .toList();
@@ -83,37 +77,8 @@ class ApiService {
     }
 
     // Retorna o ID do documento criado no Autentique
-    print(
-      "Documento enviado com sucesso para o Autentique. ID: ${result.data?['createDocument']?['id']}",
-    );
-    return result.data?['createDocument']?['id'];
-  }
-
-  /// Busca os dados do usuário dono do token da API.
-  Future<User> fetchCurrentUserFromAutentique() async {
-    const String query = """
-      query GetCurrentUser {
-        me {
-          id
-          name
-          email
-        }
-      }
-    """;
-
-    final QueryOptions options = QueryOptions(document: gql(query));
-    final QueryResult result = await _client.query(options);
-
-    if (result.hasException) {
-      print(result.exception.toString());
-      throw result.exception!;
-    }
-
-    final userData = result.data?['me'];
-    if (userData == null) {
-      throw Exception('Não foi possível buscar os dados do usuário da API.');
-    }
-
-    return User.fromJson(userData);
+    final String? docId = result.data?['createDocument']?['id'];
+    print("Documento enviado com sucesso para o Autentique. ID: $docId");
+    return docId;
   }
 }
