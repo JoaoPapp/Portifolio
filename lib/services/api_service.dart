@@ -1,32 +1,42 @@
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:dio/dio.dart' as dio; // dio é usado para o upload do arquivo
-import '../models/user.dart';
+import 'package:dio/dio.dart' as dio;
+import 'package:gql_dio_link/gql_dio_link.dart';
 
 class ApiService {
   late GraphQLClient _client;
 
   ApiService() {
-    final HttpLink httpLink = HttpLink(
+    final dio.Dio dioClient = dio.Dio();
+
+    final DioLink dioLink = DioLink(
       'https://api.autentique.com.br/v2/graphql',
+      client: dioClient,
     );
+
     final String? apiToken = dotenv.env['AUTENTIQUE_API_KEY'];
     final AuthLink authLink = AuthLink(
       getToken: () async => 'Bearer $apiToken',
     );
-    final Link link = authLink.concat(httpLink);
 
-    _client = GraphQLClient(cache: GraphQLCache(), link: link);
+    final Link link = authLink.concat(dioLink);
+
+    _client = GraphQLClient(
+      cache: GraphQLCache(),
+      link: link,
+      // >>>>>>>> A MUDANÇA ESTÁ AQUI <<<<<<<<<<
+      // Define a política padrão para todas as mutações: nunca usar o cache.
+      defaultPolicies: DefaultPolicies(
+        mutate: Policies(fetch: FetchPolicy.noCache),
+      ),
+    );
   }
 
-  /// Envia um documento e seus signatários para a API do Autentique para iniciar o processo.
   Future<String?> sendDocumentToAutentique({
     required File documentFile,
     required List<Map<String, String>> signers,
   }) async {
-    // A "mutation" do GraphQL para criar um documento.
-    // A estrutura exata dos inputs pode variar, consulte a documentação do Autentique.
     const String mutation = """
       mutation CreateDocument(\$document: DocumentInput!, \$signers: [SignerInput!]!, \$file: Upload!) {
         createDocument(
@@ -40,7 +50,6 @@ class ApiService {
       }
     """;
 
-    // Preparando os dados para a API
     final dio.MultipartFile multipartFile = await dio.MultipartFile.fromFile(
       documentFile.path,
       filename: documentFile.path.split('/').last,
@@ -48,15 +57,10 @@ class ApiService {
 
     final documentInput = {'name': documentFile.path.split('/').last};
 
-    // Mapeia a lista de signatários para o formato que a API do Autentique espera
     final signersInput =
         signers
             .map(
-              (s) => {
-                'email': s['email'],
-                'name': s['name'],
-                'action': 'SIGN', // Define a ação como "assinar"
-              },
+              (s) => {'email': s['email'], 'name': s['name'], 'action': 'SIGN'},
             )
             .toList();
 
@@ -67,16 +71,18 @@ class ApiService {
         'signers': signersInput,
         'file': multipartFile,
       },
+      // Não precisamos mais da política aqui, pois já é a padrão
     );
 
     final QueryResult result = await _client.mutate(options);
 
     if (result.hasException) {
       print("Erro ao enviar para o Autentique: ${result.exception.toString()}");
-      throw result.exception!;
+      throw Exception(
+        "Falha na comunicação com o Autentique: ${result.exception.toString()}",
+      );
     }
 
-    // Retorna o ID do documento criado no Autentique
     final String? docId = result.data?['createDocument']?['id'];
     print("Documento enviado com sucesso para o Autentique. ID: $docId");
     return docId;

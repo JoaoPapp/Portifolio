@@ -1,4 +1,4 @@
-import 'dart:io'; // Importe o dart:io para usar o tipo File
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/document.dart';
@@ -13,26 +13,59 @@ class DocumentController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = RxnString();
 
+  // >>> NOVO: STREAM DE DOCUMENTOS <<<
+  Stream<List<Document>>? _documentsStream;
+
   @override
   void onInit() {
-    // ... (o onInit continua o mesmo)
+    super.onInit();
+    final authController = Get.find<AuthController>();
+
+    // Ouve as mudanças no status de autenticação do usuário
+    ever(authController.user, (firebaseUser) {
+      if (firebaseUser == null) {
+        // Se o usuário deslogar, limpa a lista de documentos
+        documents.clear();
+      } else {
+        // Se o usuário logar, busca os documentos dele em tempo real
+        _listenToDocuments(firebaseUser.uid);
+      }
+    });
   }
 
-  void loadDocumentsFromFirestore(String userId) {
-    // ... (esta função continua a mesma)
+  // >>> NOVO: MÉTODO PARA OUVIR AS MUDANÇAS EM TEMPO REAL <<<
+  void _listenToDocuments(String userId) {
+    isLoading(true);
+    _documentsStream = FirebaseFirestore.instance
+        .collection('documents')
+        .where(
+          'ownerId',
+          isEqualTo: userId,
+        ) // Filtra apenas os documentos do usuário logado
+        .orderBy('createdAt', descending: true) // Ordena pelos mais recentes
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Document.fromFirestore(doc)).toList(),
+        );
+
+    // O bindStream atualiza a lista 'documents' automaticamente
+    documents.bindStream(_documentsStream!);
+    isLoading(false);
   }
 
-  // >>> FUNÇÃO ATUALIZADA PARA O NOVO FLUXO <<<
+  // Função para criar o documento (continua a mesma)
   Future<void> createDocumentWorkflow({
-    required File documentFile, // Agora recebe o arquivo
-    required List<Map<String, String>> signersInfo, required String documentName,
+    required File documentFile,
+    required List<Map<String, String>> signersInfo,
+    required String documentName,
   }) async {
+    // ... (o resto da função createDocumentWorkflow não muda)
     try {
       isLoading(true);
       final user = Get.find<AuthController>().user.value;
       if (user == null) throw Exception("Usuário não autenticado.");
 
-      // 1. CHAMA A API DO AUTENTIQUE PARA ENVIAR O DOCUMENTO E OS E-MAILS
       final String? autentiqueDocId = await api.sendDocumentToAutentique(
         documentFile: documentFile,
         signers: signersInfo,
@@ -44,25 +77,23 @@ class DocumentController extends GetxController {
         );
       }
 
-      // 2. SALVA UM REGISTRO NO SEU FIRESTORE PARA CONTROLE INTERNO
       List<Map<String, dynamic>> signersListForFirestore =
           signersInfo
               .map(
                 (s) => {
                   'name': s['name']!,
                   'email': s['email']!,
-                  'status': 'pendente',
+                  'status': 'pendente', // Status inicial
                 },
               )
               .toList();
 
       final documentData = {
-        'name': documentFile.path.split('/').last,
+        'name': documentName,
         'ownerId': user.uid,
         'status': 'em_andamento',
         'createdAt': Timestamp.now(),
-        'autentiqueId':
-            autentiqueDocId, // Guarda o ID do Autentique para referência
+        'autentiqueId': autentiqueDocId,
         'signers': signersListForFirestore,
       };
 

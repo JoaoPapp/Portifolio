@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:portifolio/screens/document_details_screen.dart';
 import 'package:portifolio/screens/signers_selection_screen.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/document_controller.dart';
@@ -104,6 +105,7 @@ class UploadScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   // Ação ao clicar em um documento (ex: ver detalhes)
+                  Get.to(() => DocumentDetailsScreen(document: document));
                 },
               ),
             );
