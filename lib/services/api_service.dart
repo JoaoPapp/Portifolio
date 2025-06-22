@@ -8,7 +8,17 @@ class ApiService {
   late GraphQLClient _client;
 
   ApiService() {
-    final dio.Dio dioClient = dio.Dio();
+    // >>>>>>>> MUDANÇA AQUI: Adicionamos opções de timeout <<<<<<<<<<
+    final dio.Dio dioClient = dio.Dio(
+      dio.BaseOptions(
+        // Tempo para o app estabelecer uma conexão com o servidor
+        connectTimeout: const Duration(seconds: 15),
+        // Tempo para o app receber uma resposta após enviar a requisição
+        receiveTimeout: const Duration(seconds: 30),
+        // Tempo para o app enviar os dados (upload do arquivo)
+        sendTimeout: const Duration(seconds: 30),
+      ),
+    );
 
     final DioLink dioLink = DioLink(
       'https://api.autentique.com.br/v2/graphql',
@@ -25,8 +35,6 @@ class ApiService {
     _client = GraphQLClient(
       cache: GraphQLCache(),
       link: link,
-      // >>>>>>>> A MUDANÇA ESTÁ AQUI <<<<<<<<<<
-      // Define a política padrão para todas as mutações: nunca usar o cache.
       defaultPolicies: DefaultPolicies(
         mutate: Policies(fetch: FetchPolicy.noCache),
       ),
@@ -71,7 +79,6 @@ class ApiService {
         'signers': signersInput,
         'file': multipartFile,
       },
-      // Não precisamos mais da política aqui, pois já é a padrão
     );
 
     final QueryResult result = await _client.mutate(options);
