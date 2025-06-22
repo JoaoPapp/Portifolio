@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:portifolio/screens/document_details_screen.dart';
 import 'package:portifolio/screens/signers_selection_screen.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/document_controller.dart';
+import 'package:portifolio/controllers/auth_controller.dart';
+import 'package:portifolio/controllers/document_controller.dart'; // Apenas uma importação
 
 class UploadScreen extends StatelessWidget {
   const UploadScreen({super.key});
@@ -52,14 +52,11 @@ class UploadScreen extends StatelessWidget {
           ),
         ],
       ),
-      // O Obx torna a UI reativa às mudanças nos controllers
       body: Obx(() {
-        // Mostra um indicador de progresso enquanto os documentos carregam pela primeira vez
         if (docController.isLoading.value && docController.documents.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Mostra uma mensagem se a lista de documentos estiver vazia
         if (docController.documents.isEmpty) {
           return Center(
             child: Column(
@@ -80,36 +77,44 @@ class UploadScreen extends StatelessWidget {
           );
         }
 
-        // Constrói a lista de documentos
-        return ListView.builder(
-          padding: const EdgeInsets.all(8.0),
-          itemCount: docController.documents.length,
-          itemBuilder: (context, index) {
-            final document = docController.documents[index];
-            return Card(
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-              child: ListTile(
-                leading: Icon(
-                  _getIconForStatus(document.status),
-                  color: Colors.blue,
-                  size: 40,
-                ),
-                title: Text(
-                  document.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  "Status: ${document.status ?? 'Não definido'}",
-                  style: const TextStyle(color: Colors.black54),
-                ),
-                onTap: () {
-                  // Ação ao clicar em um documento (ex: ver detalhes)
-                  Get.to(() => DocumentDetailsScreen(document: document));
-                },
-              ),
-            );
+        // Envolvemos a lista com o RefreshIndicator
+        return RefreshIndicator(
+          // A função onRefresh será chamada quando o usuário puxar a tela para baixo
+          onRefresh: () async {
+            // Verifica se o usuário ainda está logado antes de atualizar
+            if (authController.user.value != null) {
+              docController.listenToDocuments(authController.user.value!.uid);
+            }
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: docController.documents.length,
+            itemBuilder: (context, index) {
+              final document = docController.documents[index];
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                child: ListTile(
+                  leading: Icon(
+                    _getIconForStatus(document.status),
+                    color: Colors.blue,
+                    size: 40,
+                  ),
+                  title: Text(
+                    document.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    "Status: ${document.status ?? 'Não definido'}",
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                  onTap: () {
+                    Get.to(() => DocumentDetailsScreen(document: document));
+                  },
+                ),
+              );
+            },
+          ),
         );
       }),
       floatingActionButton: FloatingActionButton.extended(

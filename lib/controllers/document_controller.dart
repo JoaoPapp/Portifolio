@@ -27,20 +27,20 @@ class DocumentController extends GetxController {
       if (firebaseUser == null) {
         documents.clear();
       } else {
-        _listenToDocuments(firebaseUser.uid);
+        listenToDocuments(firebaseUser.uid);
       }
     });
 
     // 2. Verifica o ESTADO ATUAL do usuário ao iniciar o controller
     // Isso resolve o problema de o usuário já estar logado quando o app abre.
     if (authController.user.value != null) {
-      _listenToDocuments(authController.user.value!.uid);
+      listenToDocuments(authController.user.value!.uid);
     }
 
     // >>>>> FIM DA MUDANÇA <<<<<
   }
 
-  void _listenToDocuments(String userId) {
+  void listenToDocuments(String userId) {
     isLoading(true);
     _documentsStream = FirebaseFirestore.instance
         .collection('documents')
