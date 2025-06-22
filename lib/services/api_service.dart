@@ -3,19 +3,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:gql_dio_link/gql_dio_link.dart';
+import 'package:http_parser/http_parser.dart'; // Import necessário para MediaType
+import 'package:mime/mime.dart'; // Import do novo pacote
 
 class ApiService {
   late GraphQLClient _client;
 
   ApiService() {
-    // >>>>>>>> MUDANÇA AQUI: Adicionamos opções de timeout <<<<<<<<<<
+    // Configura o cliente Dio com timeouts mais longos
     final dio.Dio dioClient = dio.Dio(
       dio.BaseOptions(
-        // Tempo para o app estabelecer uma conexão com o servidor
         connectTimeout: const Duration(seconds: 15),
-        // Tempo para o app receber uma resposta após enviar a requisição
         receiveTimeout: const Duration(seconds: 30),
-        // Tempo para o app enviar os dados (upload do arquivo)
         sendTimeout: const Duration(seconds: 30),
       ),
     );
@@ -58,12 +57,20 @@ class ApiService {
       }
     """;
 
+    // >>> INÍCIO DA MUDANÇA: Identificação do tipo de arquivo <<<
+    final String filename = documentFile.path.split('/').last;
+    // Tenta descobrir o tipo do arquivo (ex: 'application/pdf') pelo nome
+    final String? mimeType = lookupMimeType(documentFile.path);
+
     final dio.MultipartFile multipartFile = await dio.MultipartFile.fromFile(
       documentFile.path,
-      filename: documentFile.path.split('/').last,
+      filename: filename,
+      // Define o ContentType, o que torna o upload mais robusto
+      contentType: mimeType != null ? MediaType.parse(mimeType) : null,
     );
+    // >>> FIM DA MUDANÇA <<<
 
-    final documentInput = {'name': documentFile.path.split('/').last};
+    final documentInput = {'name': filename};
 
     final signersInput =
         signers
