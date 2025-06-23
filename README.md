@@ -48,41 +48,32 @@ Utilizamos o **Cloud Firestore**, um banco de dados NoSQL, flexível e escaláve
 Representa as interações dos atores (usuários e sistemas) com as funcionalidades principais do FlowSign.
 
 ```mermaid
-use-case "Diagrama de Caso de Uso - FlowSign" {
-    actor "Usuário Proprietário" as User
-    actor "Signatário" as Signer
+flowchart TD
+    %% Definição dos Atores
+    User([Usuário Proprietário])
+    Signer([Signatário])
+    Autentique[("Sistema Autentique")]
+
+    %% Casos de Uso dentro do Sistema
+    subgraph Sistema FlowSign
+        UC1(Gerenciar Conta)
+        UC2(Iniciar Fluxo de Assinatura)
+        UC3(Acompanhar Documentos)
+    end
+
+    %% Relacionamentos entre Atores e Casos de Uso
+    User --> UC1
+    User --> UC2
+    User --> UC3
     
-    package "Sistema FlowSign (App + Backend)" {
-        User - -> (Gerenciar Conta)
-        (Gerenciar Conta) ..> (Criar Conta) : <<extend>>
-        (Gerenciar Conta) ..> (Fazer Login) : <<extend>>
-        (Gerenciar Conta) ..> (Fazer Logout) : <<extend>>
+    %% Relacionamentos entre Casos de Uso (Include)
+    UC2 -.->|"<<include>>"| UC2_1(Selecionar Arquivo)
+    UC2 -.->|"<<include>>"| UC2_2(Adicionar Signatários)
 
-        User - -> (Iniciar Fluxo de Assinatura)
-        (Iniciar Fluxo de Assinatura) ..> (Selecionar Arquivo) : <<include>>
-        (Iniciar Fluxo de Assinatura) ..> (Adicionar Signatários) : <<include>>
-
-        User - -> (Acompanhar Documentos)
-        (Acompanhar Documentos) ..> (Verificar Status do Documento) : <<extend>>
-        (Acompanhar Documentos) ..> (Verificar Status dos Signatários) : <<extend>>
-
-    }
-
-    package "Plataforma Externa" {
-        actor "Sistema Autentique" as Autentique
-    }
-
-    (Iniciar Fluxo de Assinatura) - -> Autentique : envia dados
-    
-    Signer -> (Receber E-mail para Assinatura)
-    (Receber E-mail para Assinatura) - - Autentique
-
-    Signer -> (Assinar ou Rejeitar Documento)
-    (Assinar ou Rejeitar Documento) - - Autentique
-    
-    Autentique -> (Notificar Sistema via Webhook)
-    (Notificar Sistema via Webhook) - -> (Acompanhar Documentos)
-}
+    %% Interações com o Sistema Externo
+    UC2 -- Envia Dados --> Autentique
+    Signer -- Assina/Rejeita via --> Autentique
+    Autentique -- Notifica via Webhook --> UC3
 ```
 
 ### Diagrama de Classes Simplificado
@@ -171,4 +162,3 @@ classDiagram
 4. Crie um arquivo `.env` na raiz do projeto Flutter e adicione a chave da API do Autentique.
 5. Execute `flutter pub get` para instalar as dependências.
 6. Execute `flutter run` para iniciar o aplicativo em um emulador ou dispositivo físico.
-```
