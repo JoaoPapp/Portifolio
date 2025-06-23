@@ -13,7 +13,19 @@
 
 ## Objetivo
 
-O projeto consiste no desenvolvimento de um aplicativo móvel de workflow de documentos para assinatura digital. Nele, cada usuário cadastrado (proprietário do documento) pode fazer upload de arquivos nos formatos PDF ou DOCX, definir uma lista sequencial de signatários (com nome, CPF/CNPJ e e-mail) e iniciar um fluxo onde o sistema encaminha automaticamente o documento, por ordem, a cada pessoa para assinatura. A cada etapa, o signatário recebe um e-mail com o link de assinatura, assina eletronicamente e, então, o documento avança para o próximo; quando todos assinarem, o PDF final é armazenado e pode ser baixado pelo proprietário. Além disso, o app mantém um histórico dos “Últimos Documentos” enviados, exibindo estado (Em andamento, Concluído ou Cancelado) e detalhes de cada signatário (pendente, assinado ou ignorado). Usuários não autenticados são direcionados à tela de login, garantindo que apenas o dono acesse seus documentos e seu fluxo de assinaturas.
+Este projeto consiste no desenvolvimento de uma solução full-stack para um workflow de assinatura digital de documentos, composta por um aplicativo móvel em Flutter e um backend serverless no Firebase. O sistema gerencia todo o ciclo de vida de um documento, desde o seu envio até a coleta de assinaturas, com atualizações de status em tempo real para o usuário.
+
+As funcionalidades principais incluem:
+
+Criação de Fluxo de Assinatura: Permite que usuários autenticados façam o upload de documentos (PDF, DOCX) e definam uma lista sequencial de signatários, cada um com seu nome, CPF e e-mail.
+
+Automação do Processo: Uma vez iniciado, o sistema, através da integração com uma API externa (Autentique), notifica automaticamente cada signatário por e-mail, seguindo a ordem pré-definida. O link de assinatura é único para cada etapa do processo.
+
+Acompanhamento em Tempo Real: O aplicativo exibe um dashboard onde o proprietário pode acompanhar o status geral de seus documentos (Em andamento, Concluído, Cancelado) e o progresso detalhado de cada signatário (Pendente, Assinado). A interface é atualizada automaticamente através de webhooks e streams de dados do Firestore, sem a necessidade de recarregar a tela.
+
+Segurança e Controle de Acesso: A plataforma garante a segurança e a privacidade dos dados através da autenticação de usuários (Firebase Authentication) e de regras de acesso no banco de dados que permitem que um usuário acesse e gerencie apenas os seus próprios documentos (Firestore Security Rules).
+
+O objetivo final é fornecer uma ferramenta robusta, segura e intuitiva para a gestão de assinaturas digitais, demonstrando a integração de tecnologias de frontend, backend e serviços de terceiros em uma arquitetura reativa e moderna.
 
 ---
 
