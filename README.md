@@ -109,25 +109,25 @@ classDiagram
 
 ### Requisitos Funcionais:
 
-**RF01** Autenticação de usuários (login, logout, criar conta).
-**RF02** Upload de documentos nos formatos PDF e DOCX.
-**RF03** Cadastro de múltiplos signatários com nome, CPF, e-mail e definição de ordem de assinatura.
-**RF04** Início do fluxo de assinatura via integração com a API do Autentique.
-**RF05** Envio automático de e-mail pela plataforma externa ao signatário ativo com link para assinatura.
-**RF06** Recebimento de webhook para confirmação de assinatura (`signature.accepted`) e rejeição (`signature.rejected`).
-**RF07** Exibição do status de cada signatário (pendente, assinado, rejeitado) em tempo real no aplicativo.
-**RF08** Exibição do status geral do documento (em_andamento, concluido, cancelado).
-**RF09** Histórico de documentos enviados para cada usuário.
-**RF10** Proteção de dados garantindo que um usuário só pode ver seus próprios documentos.
+- **RF01** Autenticação de usuários (login, logout, criar conta).
+- **RF02** Upload de documentos nos formatos PDF e DOCX.
+- **RF03** Cadastro de múltiplos signatários com nome, CPF, e-mail e definição de ordem de assinatura.
+- **RF04** Início do fluxo de assinatura via integração com a API do Autentique.
+- **RF05** Envio automático de e-mail pela plataforma externa ao signatário ativo com link para assinatura.
+- **RF06** Recebimento de webhook para confirmação de assinatura (`signature.accepted`) e rejeição (`signature.rejected`).
+- **RF07** Exibição do status de cada signatário (pendente, assinado, rejeitado) em tempo real no aplicativo.
+- **RF08** Exibição do status geral do documento (em_andamento, concluido, cancelado).
+- **RF09** Histórico de documentos enviados para cada usuário.
+- **RF10** Proteção de dados garantindo que um usuário só pode ver seus próprios documentos.
 
 ### Requisitos Não Funcionais:
 
-**RNF01** O aplicativo deve ser compatível com as versões mais recentes de Android e iOS.
-**RNF02** A comunicação com as APIs (Autentique e Firebase) deve ser segura (HTTPS).
-**RNF03** Chaves de API e segredos do backend devem ser gerenciados como variáveis de ambiente e não expostos no código-fonte.
-**RNF04** O backend deve ser serverless e escalável (Cloud Functions).
-**RNF05** O banco de dados deve ser seguro contra acesso não autorizado (Firestore Security Rules).
-**RNF06** A interface deve ser responsiva e fornecer feedback visual para o usuário durante operações de longa duração (carregamento).
+- **RNF01** O aplicativo deve ser compatível com as versões mais recentes de Android e iOS.
+- **RNF02** A comunicação com as APIs (Autentique e Firebase) deve ser segura (HTTPS).
+- **RNF03** Chaves de API e segredos do backend devem ser gerenciados como variáveis de ambiente e não expostos no código-fonte.
+- **RNF04** O backend deve ser serverless e escalável (Cloud Functions).
+- **RNF05** O banco de dados deve ser seguro contra acesso não autorizado (Firestore Security Rules).
+- **RNF06** A interface deve ser responsiva e fornecer feedback visual para o usuário durante operações de longa duração (carregamento).
 
 ---
 
