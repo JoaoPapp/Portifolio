@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   late GraphQLClient _client;
@@ -16,7 +17,6 @@ class ApiService {
       getToken: () async => 'Bearer $apiToken',
     );
     final Link link = authLink.concat(httpLink);
-
     _client = GraphQLClient(cache: GraphQLCache(), link: link);
   }
 
@@ -27,13 +27,7 @@ class ApiService {
   }) async {
     const String mutation = """
       mutation CreateDocument(\$document: DocumentInput!, \$signers: [SignerInput!]!, \$file: Upload!) {
-        createDocument(
-          document: \$document,
-          signers: \$signers,
-          file: \$file
-        ) {
-          id
-        }
+        createDocument(document: \$document, signers: \$signers, file: \$file) { id }
       }
     """;
 
@@ -47,7 +41,7 @@ class ApiService {
       filename: fileName,
     );
 
-    // >>>>> AQUI ESTÁ A MUDANÇA MAIS IMPORTANTE <<<<<
+    // >>>>> MUDANÇA IMPORTANTE AQUI <<<<<
     // Adicionamos 'sortable: true' para instruir o Autentique a seguir a ordem da lista.
     final documentInput = {'name': fileName, 'sortable': true};
 

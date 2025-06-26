@@ -13,53 +13,62 @@ class DocumentController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = RxnString();
 
+  Stream<List<Document>>? _documentsStream;
+
   @override
   void onInit() {
     super.onInit();
-    ever(Get.find<AuthController>().user, (user) {
-      if (user != null) {
-        listenToDocuments(user.uid);
-      } else {
+    final authController = Get.find<AuthController>();
+
+    // >>>>> INÍCIO DA MUDANÇA <<<<<
+
+    // 1. Escuta por MUDANÇAS futuras no estado de login (login/logout)
+    ever(authController.user, (firebaseUser) {
+      if (firebaseUser == null) {
         documents.clear();
+      } else {
+        listenToDocuments(firebaseUser.uid);
       }
     });
+
+    // 2. Verifica o ESTADO ATUAL do usuário ao iniciar o controller
+    // Isso resolve o problema de o usuário já estar logado quando o app abre.
+    if (authController.user.value != null) {
+      listenToDocuments(authController.user.value!.uid);
+    }
+
+    // >>>>> FIM DA MUDANÇA <<<<<
   }
 
   void listenToDocuments(String userId) {
     isLoading(true);
-    FirebaseFirestore.instance
+    _documentsStream = FirebaseFirestore.instance
         .collection('documents')
         .where('ownerId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .listen(
-          (snapshot) {
-            documents.value =
-                snapshot.docs
-                    .map((doc) => Document.fromFirestore(doc))
-                    .toList();
-            isLoading(false);
-          },
-          onError: (error) {
-            print("Erro ao carregar documentos: $error");
-            errorMessage.value = "Falha ao carregar documentos.";
-            isLoading(false);
-          },
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Document.fromFirestore(doc)).toList(),
         );
+
+    // O bindStream gerencia o estado de loading e os dados automaticamente
+    documents.bindStream(_documentsStream!);
+    // A linha abaixo não é mais necessária pois o bindStream já faz um controle inicial
+    // isLoading(false);
   }
 
-  // >>> FUNÇÃO ATUALIZADA PARA O FLUXO SEQUENCIAL <<<
+  // A função createDocumentWorkflow continua exatamente a mesma
   Future<void> createDocumentWorkflow({
-    required File documentFile, // Adicionamos o arquivo como parâmetro
-    required String documentName,
+    required File documentFile,
     required List<Map<String, String>> signersInfo,
+    required String documentName,
   }) async {
     try {
       isLoading(true);
       final user = Get.find<AuthController>().user.value;
       if (user == null) throw Exception("Usuário não autenticado.");
 
-      // Chama a API do Autentique para iniciar o fluxo
       final String? autentiqueDocId = await api.sendDocumentToAutentique(
         documentFile: documentFile,
         signers: signersInfo,
@@ -71,7 +80,6 @@ class DocumentController extends GetxController {
         );
       }
 
-      // Prepara os dados para salvar no seu Firestore
       List<Map<String, dynamic>> signersListForFirestore =
           signersInfo
               .map(
@@ -112,6 +120,37 @@ class DocumentController extends GetxController {
     Document document,
     String signerEmail,
   ) async {
-    // ...
+    try {
+      isLoading(true);
+
+      final signerIndex = document.signers.indexWhere(
+        (signer) => signer['email'] == signerEmail,
+      );
+
+      if (signerIndex == -1) {
+        throw Exception("Signatário não encontrado no documento.");
+      }
+
+      List<dynamic> updatedSigners = List.from(document.signers);
+      updatedSigners[signerIndex]['status'] = 'assinado';
+
+      bool allSigned = updatedSigners.every((s) => s['status'] == 'assinado');
+      String newDocumentStatus = allSigned ? 'concluido' : 'em_andamento';
+
+      await FirebaseFirestore.instance
+          .collection('documents')
+          .doc(document.id)
+          .update({'signers': updatedSigners, 'status': newDocumentStatus});
+
+      Get.snackbar("Sucesso!", "Documento assinado com sucesso!");
+
+      if (allSigned) {
+        Get.offAllNamed('/upload');
+      }
+    } catch (e) {
+      Get.snackbar("Erro", "Falha ao registrar assinatura: ${e.toString()}");
+    } finally {
+      isLoading(false);
+    }
   }
 }
