@@ -1,45 +1,26 @@
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:dio/dio.dart' as dio;
-import 'package:gql_dio_link/gql_dio_link.dart';
-import 'package:http_parser/http_parser.dart'; // Import necessário para MediaType
-import 'package:mime/mime.dart'; // Import do novo pacote
+import 'package:http/http.dart' as http;
 
 class ApiService {
   late GraphQLClient _client;
 
   ApiService() {
-    // Configura o cliente Dio com timeouts mais longos
-    final dio.Dio dioClient = dio.Dio(
-      dio.BaseOptions(
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
-      ),
-    );
-
-    final DioLink dioLink = DioLink(
+    final HttpLink httpLink = HttpLink(
       'https://api.autentique.com.br/v2/graphql',
-      client: dioClient,
+      defaultHeaders: {'Content-Type': 'multipart/form-data'},
     );
-
     final String? apiToken = dotenv.env['AUTENTIQUE_API_KEY'];
     final AuthLink authLink = AuthLink(
       getToken: () async => 'Bearer $apiToken',
     );
+    final Link link = authLink.concat(httpLink);
 
-    final Link link = authLink.concat(dioLink);
-
-    _client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: link,
-      defaultPolicies: DefaultPolicies(
-        mutate: Policies(fetch: FetchPolicy.noCache),
-      ),
-    );
+    _client = GraphQLClient(cache: GraphQLCache(), link: link);
   }
 
+  /// Envia um documento para o Autentique, que gerenciará o fluxo sequencial de assinaturas.
   Future<String?> sendDocumentToAutentique({
     required File documentFile,
     required List<Map<String, String>> signers,
@@ -52,25 +33,23 @@ class ApiService {
           file: \$file
         ) {
           id
-          name
         }
       }
     """;
 
-    // >>> INÍCIO DA MUDANÇA: Identificação do tipo de arquivo <<<
-    final String filename = documentFile.path.split('/').last;
-    // Tenta descobrir o tipo do arquivo (ex: 'application/pdf') pelo nome
-    final String? mimeType = lookupMimeType(documentFile.path);
-
-    final dio.MultipartFile multipartFile = await dio.MultipartFile.fromFile(
-      documentFile.path,
-      filename: filename,
-      // Define o ContentType, o que torna o upload mais robusto
-      contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+    final byteStream = http.ByteStream(documentFile.openRead());
+    final length = await documentFile.length();
+    final fileName = documentFile.path.split('/').last;
+    final multipartFile = http.MultipartFile(
+      'file',
+      byteStream,
+      length,
+      filename: fileName,
     );
-    // >>> FIM DA MUDANÇA <<<
 
-    final documentInput = {'name': filename};
+    // >>>>> AQUI ESTÁ A MUDANÇA MAIS IMPORTANTE <<<<<
+    // Adicionamos 'sortable: true' para instruir o Autentique a seguir a ordem da lista.
+    final documentInput = {'name': fileName, 'sortable': true};
 
     final signersInput =
         signers
@@ -92,13 +71,11 @@ class ApiService {
 
     if (result.hasException) {
       print("Erro ao enviar para o Autentique: ${result.exception.toString()}");
-      throw Exception(
-        "Falha na comunicação com o Autentique: ${result.exception.toString()}",
-      );
+      throw result.exception!;
     }
 
     final String? docId = result.data?['createDocument']?['id'];
-    print("Documento enviado com sucesso para o Autentique. ID: $docId");
+    print("Documento enviado ao Autentique para fluxo sequencial. ID: $docId");
     return docId;
   }
 }

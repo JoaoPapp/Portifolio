@@ -171,13 +171,14 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
                                   )
                                   .toList();
 
-                          // Chama a função do controller para criar o fluxo
+                          // >>>>> AQUI ESTÁ A CHAMADA CORRIGIDA <<<<<
+                          // Agora todos os parâmetros necessários estão sendo enviados.
                           docController.createDocumentWorkflow(
-                            documentFile: widget.file, // Adicione este parâmetro
+                            documentFile: widget.file,
                             documentName: widget.file.path.split('/').last,
                             signersInfo: signersData,
                           );
-                    },
+                        },
                 child:
                     docController.isLoading.value
                         ? const CircularProgressIndicator(color: Colors.white)

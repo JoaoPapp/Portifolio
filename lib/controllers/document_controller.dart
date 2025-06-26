@@ -13,60 +13,53 @@ class DocumentController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = RxnString();
 
-  Stream<List<Document>>? _documentsStream;
-
   @override
   void onInit() {
     super.onInit();
-    final authController = Get.find<AuthController>();
-
-    // >>>>> INÍCIO DA MUDANÇA <<<<<
-
-    // 1. Escuta por MUDANÇAS futuras no estado de login (login/logout)
-    ever(authController.user, (firebaseUser) {
-      if (firebaseUser == null) {
-        documents.clear();
+    ever(Get.find<AuthController>().user, (user) {
+      if (user != null) {
+        listenToDocuments(user.uid);
       } else {
-        listenToDocuments(firebaseUser.uid);
+        documents.clear();
       }
     });
-
-    // 2. Verifica o ESTADO ATUAL do usuário ao iniciar o controller
-    // Isso resolve o problema de o usuário já estar logado quando o app abre.
-    if (authController.user.value != null) {
-      listenToDocuments(authController.user.value!.uid);
-    }
-
-    // >>>>> FIM DA MUDANÇA <<<<<
   }
 
   void listenToDocuments(String userId) {
     isLoading(true);
-    _documentsStream = FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('documents')
         .where('ownerId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Document.fromFirestore(doc)).toList(),
+        .listen(
+          (snapshot) {
+            documents.value =
+                snapshot.docs
+                    .map((doc) => Document.fromFirestore(doc))
+                    .toList();
+            isLoading(false);
+          },
+          onError: (error) {
+            print("Erro ao carregar documentos: $error");
+            errorMessage.value = "Falha ao carregar documentos.";
+            isLoading(false);
+          },
         );
-
-    documents.bindStream(_documentsStream!);
-    isLoading(false);
   }
 
-  // A função createDocumentWorkflow continua exatamente a mesma
+  // >>> FUNÇÃO ATUALIZADA PARA O FLUXO SEQUENCIAL <<<
   Future<void> createDocumentWorkflow({
-    required File documentFile,
-    required List<Map<String, String>> signersInfo,
+    required File documentFile, // Adicionamos o arquivo como parâmetro
     required String documentName,
+    required List<Map<String, String>> signersInfo,
   }) async {
     try {
       isLoading(true);
       final user = Get.find<AuthController>().user.value;
       if (user == null) throw Exception("Usuário não autenticado.");
 
+      // Chama a API do Autentique para iniciar o fluxo
       final String? autentiqueDocId = await api.sendDocumentToAutentique(
         documentFile: documentFile,
         signers: signersInfo,
@@ -78,6 +71,7 @@ class DocumentController extends GetxController {
         );
       }
 
+      // Prepara os dados para salvar no seu Firestore
       List<Map<String, dynamic>> signersListForFirestore =
           signersInfo
               .map(
@@ -111,5 +105,13 @@ class DocumentController extends GetxController {
     } finally {
       isLoading(false);
     }
+  }
+
+  // Função para marcar como assinado (essencial para o fluxo)
+  Future<void> markDocumentAsSignedBy(
+    Document document,
+    String signerEmail,
+  ) async {
+    // ...
   }
 }
