@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 
-// 1. Convertemos para StatefulWidget
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
 
@@ -11,17 +10,13 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
-  // 2. Declaramos os controllers aqui, fora do método build.
-  //    Eles serão criados apenas uma vez.
   final fullNameController = TextEditingController();
   final cpfController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // Acessamos o AuthController uma vez aqui
   final AuthController authController = Get.find();
 
-  // 3. É uma boa prática limpar os controllers quando a tela for destruída
   @override
   void dispose() {
     fullNameController.dispose();
@@ -33,7 +28,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // O resto da UI permanece praticamente o mesmo
     return Scaffold(
       appBar: AppBar(
         title: const Text('Criar Conta'),
@@ -52,10 +46,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              // Campo Nome Completo
               TextFormField(
                 controller:
-                    fullNameController, // Agora usa o controller do State
+                    fullNameController, 
                 decoration: const InputDecoration(
                   labelText: 'Nome Completo',
                   border: OutlineInputBorder(),
@@ -64,9 +57,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 keyboardType: TextInputType.text,
               ),
               const SizedBox(height: 16),
-              // Campo CPF
               TextFormField(
-                controller: cpfController, // Agora usa o controller do State
+                controller: cpfController, 
                 decoration: const InputDecoration(
                   labelText: 'CPF',
                   border: OutlineInputBorder(),
@@ -75,9 +67,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
-              // Campo Email
               TextFormField(
-                controller: emailController, // Agora usa o controller do State
+                controller: emailController, 
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
@@ -86,10 +77,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
-              // Campo Senha
               TextFormField(
                 controller:
-                    passwordController, // Agora usa o controller do State
+                    passwordController, 
                 decoration: const InputDecoration(
                   labelText: 'Senha',
                   border: OutlineInputBorder(),
@@ -98,7 +88,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 obscureText: true,
               ),
               const SizedBox(height: 24),
-              // Botão de Criar Conta
               Obx(() {
                 return ElevatedButton(
                   style: ElevatedButton.styleFrom(

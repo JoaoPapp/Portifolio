@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/document_controller.dart';
 
-// Um modelo simples para guardar os dados do signatário na tela
 class SignerInfo {
   final String name;
   final String cpf;
@@ -13,7 +12,7 @@ class SignerInfo {
 }
 
 class SignersSelectionScreen extends StatefulWidget {
-  final File file; // O arquivo PDF/DOCX que veio da tela anterior
+  final File file;
   const SignersSelectionScreen({required this.file, super.key});
 
   @override
@@ -21,11 +20,9 @@ class SignersSelectionScreen extends StatefulWidget {
 }
 
 class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
-  // Lista local para guardar os signatários que o usuário adicionar
   final List<SignerInfo> _signers = [];
   final DocumentController docController = Get.find();
 
-  // Função para mostrar o pop-up (dialog) de adicionar signatário
   Future<void> _showAddSignerDialog() async {
     final nameController = TextEditingController();
     final cpfController = TextEditingController();
@@ -112,7 +109,6 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
       appBar: AppBar(title: const Text('Escolha os Signatários')),
       body: Column(
         children: [
-          // Lista dos signatários já adicionados
           Expanded(
             child:
                 _signers.isEmpty
@@ -148,7 +144,6 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
                       },
                     ),
           ),
-          // Botão para enviar para assinatura
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Obx(
@@ -158,7 +153,7 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
                 ),
                 onPressed:
                     _signers.isEmpty || docController.isLoading.value
-                        ? null // Desabilita o botão se a lista estiver vazia ou carregando
+                        ? null
                         : () {
                           final signersData =
                               _signers
@@ -171,8 +166,6 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
                                   )
                                   .toList();
 
-                          // >>>>> AQUI ESTÁ A CHAMADA CORRIGIDA <<<<<
-                          // Agora todos os parâmetros necessários estão sendo enviados.
                           docController.createDocumentWorkflow(
                             documentFile: widget.file,
                             documentName: widget.file.path.split('/').last,
@@ -188,7 +181,6 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
           ),
         ],
       ),
-      // Botão flutuante para adicionar novos signatários
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddSignerDialog,
         tooltip: 'Adicionar Signatário',

@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:portifolio/models/user.dart';
 
 class SignatureFlowScreen extends StatefulWidget {
-  /// O PDF que foi escolhido
+  
   final File pdfFile;
 
-  /// A lista de usuários que vão assinar
   final List<User> signers;
 
   const SignatureFlowScreen({
@@ -46,11 +45,9 @@ class _SignatureFlowScreenState extends State<SignatureFlowScreen> {
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
               onPressed: () {
-                // Quando terminar de assinar:
                 setState(() {
                   _currentIndex++;
                   if (_currentIndex >= widget.signers.length) {
-                    // Todos assinaram: volta à lista ou fecha
                     Navigator.of(context).popUntil((r) => r.isFirst);
                   }
                 });

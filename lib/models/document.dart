@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Document {
   final String id;
   final String name;
-  final String? ownerId; // Campos agora podem ser nulos para flexibilidade
+  final String? ownerId;
   final String? status;
   final List<dynamic> signers;
   final Timestamp? createdAt;
@@ -17,7 +17,6 @@ class Document {
     this.createdAt,
   });
 
-  /// Construtor para dados vindos do Firestore
   factory Document.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) {
@@ -32,7 +31,6 @@ class Document {
     );
   }
 
-  /// Construtor para dados vindos de um JSON (API do Autentique)
   factory Document.fromJson(Map<String, dynamic> json) {
     final createdAtString = json['created_at'] as String?;
     final createdAt =
@@ -43,10 +41,8 @@ class Document {
     return Document(
       id: json['id'] ?? '',
       name: json['name'] ?? 'Nome não definido',
-      // Estes campos podem não vir da API do Autentique, então são nulos
       ownerId: null,
       status: json['status'],
-      // A API pode retornar 'signatures' em vez de 'signers'
       signers: json['signatures'] ?? [],
       createdAt: createdAt,
     );

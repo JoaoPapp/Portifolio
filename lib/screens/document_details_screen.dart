@@ -6,7 +6,6 @@ class DocumentDetailsScreen extends StatelessWidget {
 
   const DocumentDetailsScreen({required this.document, super.key});
 
-  // Função auxiliar para retornar um ícone baseado no status do signatário
   Icon _getIconForSignerStatus(String status) {
     switch (status.toLowerCase()) {
       case 'assinado':
@@ -43,7 +42,6 @@ class DocumentDetailsScreen extends StatelessWidget {
               child: ListView.builder(
                 itemCount: document.signers.length,
                 itemBuilder: (context, index) {
-                  // O 'signer' aqui é um Map<String, dynamic>
                   final signer = document.signers[index];
                   final name = signer['name'] ?? 'Nome não informado';
                   final email = signer['email'] ?? 'Email não informado';

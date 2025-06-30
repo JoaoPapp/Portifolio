@@ -20,9 +20,7 @@ class DocumentController extends GetxController {
     super.onInit();
     final authController = Get.find<AuthController>();
 
-    // >>>>> INÍCIO DA MUDANÇA <<<<<
 
-    // 1. Escuta por MUDANÇAS futuras no estado de login (login/logout)
     ever(authController.user, (firebaseUser) {
       if (firebaseUser == null) {
         documents.clear();
@@ -31,13 +29,10 @@ class DocumentController extends GetxController {
       }
     });
 
-    // 2. Verifica o ESTADO ATUAL do usuário ao iniciar o controller
-    // Isso resolve o problema de o usuário já estar logado quando o app abre.
     if (authController.user.value != null) {
       listenToDocuments(authController.user.value!.uid);
     }
 
-    // >>>>> FIM DA MUDANÇA <<<<<
   }
 
   void listenToDocuments(String userId) {
@@ -52,13 +47,9 @@ class DocumentController extends GetxController {
               snapshot.docs.map((doc) => Document.fromFirestore(doc)).toList(),
         );
 
-    // O bindStream gerencia o estado de loading e os dados automaticamente
     documents.bindStream(_documentsStream!);
-    // A linha abaixo não é mais necessária pois o bindStream já faz um controle inicial
-    // isLoading(false);
   }
 
-  // A função createDocumentWorkflow continua exatamente a mesma
   Future<void> createDocumentWorkflow({
     required File documentFile,
     required List<Map<String, String>> signersInfo,
@@ -115,7 +106,6 @@ class DocumentController extends GetxController {
     }
   }
 
-  // Função para marcar como assinado (essencial para o fluxo)
   Future<void> markDocumentAsSignedBy(
     Document document,
     String signerEmail,

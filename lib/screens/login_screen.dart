@@ -57,7 +57,6 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Widget para exibir a mensagem de erro do controller
               Obx(() {
                 if (authController.errorMessage.value != null) {
                   return Padding(
@@ -69,10 +68,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                   );
                 }
-                return const SizedBox.shrink(); // Não mostra nada se não houver erro
+                return const SizedBox.shrink(); 
               }),
               
-              // Botão de Entrar
               Obx(() {
                 return ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -81,7 +79,7 @@ class LoginScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                   ),
                   onPressed: authController.isLoading.value
-                      ? null // Desabilita o botão enquanto carrega
+                      ? null 
                       : () {
                           authController.signIn(
                             email: emailController.text.trim(),
@@ -99,10 +97,8 @@ class LoginScreen extends StatelessWidget {
               }),
               const SizedBox(height: 16),
 
-              // Botão para Criar Conta
               TextButton(
                 onPressed: () {
-                  // Navegação para a tela de cadastro usando GetX
                   Get.to(() => const CreateAccountScreen());
                 },
                 child: const Text('Criar conta'),

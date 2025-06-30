@@ -5,12 +5,11 @@ import 'package:get/get.dart';
 import 'package:portifolio/screens/document_details_screen.dart';
 import 'package:portifolio/screens/signers_selection_screen.dart';
 import 'package:portifolio/controllers/auth_controller.dart';
-import 'package:portifolio/controllers/document_controller.dart'; // Apenas uma importação
+import 'package:portifolio/controllers/document_controller.dart';
 
 class UploadScreen extends StatelessWidget {
   const UploadScreen({super.key});
 
-  // Função auxiliar para retornar um ícone baseado no status
   IconData _getIconForStatus(String? status) {
     switch (status) {
       case 'em_andamento':
@@ -77,11 +76,8 @@ class UploadScreen extends StatelessWidget {
           );
         }
 
-        // Envolvemos a lista com o RefreshIndicator
         return RefreshIndicator(
-          // A função onRefresh será chamada quando o usuário puxar a tela para baixo
           onRefresh: () async {
-            // Verifica se o usuário ainda está logado antes de atualizar
             if (authController.user.value != null) {
               docController.listenToDocuments(authController.user.value!.uid);
             }

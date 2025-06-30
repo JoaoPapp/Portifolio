@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key}); // ou { Key? key }: super(key: key);
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // seu código de UI aqui
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: Center(
