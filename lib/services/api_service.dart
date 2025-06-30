@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   late GraphQLClient _client;
@@ -20,7 +19,6 @@ class ApiService {
     _client = GraphQLClient(cache: GraphQLCache(), link: link);
   }
 
-  /// Envia um documento para o Autentique, que gerenciará o fluxo sequencial de assinaturas.
   Future<String?> sendDocumentToAutentique({
     required File documentFile,
     required List<Map<String, String>> signers,
@@ -41,8 +39,6 @@ class ApiService {
       filename: fileName,
     );
 
-    // >>>>> MUDANÇA IMPORTANTE AQUI <<<<<
-    // Adicionamos 'sortable: true' para instruir o Autentique a seguir a ordem da lista.
     final documentInput = {'name': fileName, 'sortable': true};
 
     final signersInput =
