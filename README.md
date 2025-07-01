@@ -91,35 +91,6 @@ flowchart TD
     UC2 -- Envia Dados --> Autentique
     UC4 -- Busca URL --> Autentique
     Signer -- Assina/Rejeita via --> Autentique
-    Autentique -- Notifica via Webhook --> UC3flowchart TD
-    %% Definição dos Atores
-    User([Usuário Proprietário])
-    Signer([Signatário])
-    Autentique[("Sistema Autentique")]
-
-    %% Casos de Uso dentro do Sistema
-    subgraph Sistema FlowSign
-        UC1(Gerenciar Conta)
-        UC2(Iniciar Fluxo de Assinatura)
-        UC3(Acompanhar Documentos)
-        UC4(Baixar Documento Finalizado)
-    end
-
-    %% Relacionamentos entre Atores e Casos de Uso
-    User --> UC1
-    User --> UC2
-    User --> UC3
-    User --> UC4
-    
-    %% Relacionamentos entre Casos de Uso (Include)
-    UC2 -.->|"<<include>>"| UC2_1(Selecionar Arquivo)
-    UC2 -.->|"<<include>>"| UC2_2(Adicionar Signatários)
-    UC3 -- pode levar a --> UC4
-
-    %% Interações com o Sistema Externo
-    UC2 -- Envia Dados --> Autentique
-    UC4 -- Busca URL --> Autentique
-    Signer -- Assina/Rejeita via --> Autentique
     Autentique -- Notifica via Webhook --> UC3
 ```
 
