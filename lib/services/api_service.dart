@@ -23,9 +23,11 @@ class ApiService {
 
   Future<String?> getSignedDocumentUrl(String autentiqueId) async {
     const String query = r'''
-      query GetDocument($id: ID!) {
+      query GetDocument($id: UUID!) {
         document(id: $id) {
-          file_signed
+          files {
+            signed
+          }
         }
       }
     ''';
@@ -46,7 +48,13 @@ class ApiService {
         throw result.exception!;
       }
 
-      final String? downloadUrl = result.data?['document']?['file_signed'];
+      final String? downloadUrl = result.data?['document']?['files']?['signed'];
+
+      if (downloadUrl == null) {
+        print("URL de download não encontrada na resposta da API.");
+        throw Exception("URL de download não retornada.");
+      }
+
       return downloadUrl;
     } catch (e) {
       print("Exceção ao buscar URL: $e");
@@ -63,13 +71,10 @@ class ApiService {
         createDocument(document: \$document, signers: \$signers, file: \$file) { id }
       }
     """;
-
     final String? apiToken = dotenv.env['AUTENTIQUE_API_KEY'];
     final url = Uri.parse('https://api.autentique.com.br/v2/graphql');
     final request = http.MultipartRequest('POST', url);
-
     request.headers['Authorization'] = 'Bearer $apiToken';
-
     final documentInput = {
       'name': documentFile.path.split('/').last,
       'sortable': true,
@@ -80,37 +85,31 @@ class ApiService {
               (s) => {'email': s['email'], 'name': s['name'], 'action': 'SIGN'},
             )
             .toList();
-
     final Map<String, dynamic> variables = {
       'document': documentInput,
       'signers': signersInput,
       'file': null,
     };
-
     final Map<String, dynamic> operations = {
       'query': mutation,
       'variables': variables,
     };
-
     final Map<String, String> fields = {
       'operations': json.encode(operations),
       'map': '{"0": ["variables.file"]}',
     };
     request.fields.addAll(fields);
-
     final http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
       '0',
       documentFile.path,
       contentType: MediaType('application', 'octet-stream'),
     );
     request.files.add(multipartFile);
-
     try {
       final http.StreamedResponse response = await request.send().timeout(
         const Duration(seconds: 30),
       );
       final String responseBody = await response.stream.bytesToString();
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(responseBody);
         if (jsonResponse.containsKey('errors')) {

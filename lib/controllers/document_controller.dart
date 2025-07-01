@@ -144,7 +144,17 @@ class DocumentController extends GetxController {
     isLoading(true);
     try {
       final String? downloadUrl = await api.getSignedDocumentUrl(autentiqueId);
+
       if (downloadUrl != null && await canLaunchUrlString(downloadUrl)) {
+        Get.snackbar(
+          "Download Iniciado",
+          "O documento está sendo baixado pelo navegador. Verifique suas notificações.",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.blue,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+
         await launchUrlString(downloadUrl);
       } else {
         throw Exception("Não foi possível obter ou abrir a URL de download.");

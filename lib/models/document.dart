@@ -7,6 +7,7 @@ class Document {
   final String? status;
   final List<dynamic> signers;
   final Timestamp? createdAt;
+  final String? autentiqueId;
 
   Document({
     required this.id,
@@ -15,6 +16,7 @@ class Document {
     this.status,
     required this.signers,
     this.createdAt,
+    this.autentiqueId,
   });
 
   factory Document.fromFirestore(
@@ -28,6 +30,7 @@ class Document {
       status: data['status'],
       signers: data['signers'] ?? [],
       createdAt: data['createdAt'],
+      autentiqueId: data['autentiqueId'],
     );
   }
 
@@ -45,6 +48,7 @@ class Document {
       status: json['status'],
       signers: json['signatures'] ?? [],
       createdAt: createdAt,
+      autentiqueId: json['autentiqueId'],
     );
   }
 }
