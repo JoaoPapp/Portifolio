@@ -23,6 +23,8 @@ Automação do Processo: Uma vez iniciado, o sistema, através da integração c
 
 Acompanhamento em Tempo Real: O aplicativo exibe um dashboard onde o proprietário pode acompanhar o status geral de seus documentos (Em andamento, Concluído, Cancelado) e o progresso detalhado de cada signatário (Pendente, Assinado). A interface é atualizada automaticamente através de webhooks e streams de dados do Firestore, sem a necessidade de recarregar a tela.
 
+Download Seguro: Após a conclusão do fluxo de assinaturas, o proprietário do documento pode baixar a versão final e assinada diretamente do aplicativo, garantindo acesso rápido e seguro ao arquivo finalizado.
+
 Segurança e Controle de Acesso: A plataforma garante a segurança e a privacidade dos dados através da autenticação de usuários (Firebase Authentication) e de regras de acesso no banco de dados que permitem que um usuário acesse e gerencie apenas os seus próprios documentos (Firestore Security Rules).
 
 O objetivo final é fornecer uma ferramenta robusta, segura e intuitiva para a gestão de assinaturas digitais, demonstrando a integração de tecnologias de frontend, backend e serviços de terceiros em uma arquitetura reativa e moderna.
@@ -45,7 +47,7 @@ O backend é serverless, implementado com **Node.js** e **Firebase Cloud Functio
 
 ### **Banco de Dados (Cloud Firestore)**
 
-Utilizamos o **Cloud Firestore**, um banco de dados NoSQL, flexível e escalável do Firebase. Ele armazena os dados de usuários e documentos. O aplicativo Flutter se conecta a ele em tempo real (usando Streams), garantindo que qualquer atualização feita pelo backend seja refletida instantaneamente na interface do usuário sem a necessidade de recarregar a tela.
+Foi utilizado o **Cloud Firestore**, um banco de dados NoSQL, flexível e escalável do Firebase. Ele armazena os dados de usuários e documentos. O aplicativo Flutter se conecta a ele em tempo real (usando Streams), garantindo que qualquer atualização feita pelo backend seja refletida instantaneamente na interface do usuário sem a necessidade de recarregar a tela.
 
 ### **Serviços Externos**
 - **Firebase Authentication:** Para gerenciamento completo e seguro de login e criação de contas.
@@ -71,19 +73,52 @@ flowchart TD
         UC1(Gerenciar Conta)
         UC2(Iniciar Fluxo de Assinatura)
         UC3(Acompanhar Documentos)
+        UC4(Baixar Documento Finalizado)
     end
 
     %% Relacionamentos entre Atores e Casos de Uso
     User --> UC1
     User --> UC2
     User --> UC3
+    User --> UC4
     
     %% Relacionamentos entre Casos de Uso (Include)
     UC2 -.->|"<<include>>"| UC2_1(Selecionar Arquivo)
     UC2 -.->|"<<include>>"| UC2_2(Adicionar Signatários)
+    UC3 -- pode levar a --> UC4
 
     %% Interações com o Sistema Externo
     UC2 -- Envia Dados --> Autentique
+    UC4 -- Busca URL --> Autentique
+    Signer -- Assina/Rejeita via --> Autentique
+    Autentique -- Notifica via Webhook --> UC3flowchart TD
+    %% Definição dos Atores
+    User([Usuário Proprietário])
+    Signer([Signatário])
+    Autentique[("Sistema Autentique")]
+
+    %% Casos de Uso dentro do Sistema
+    subgraph Sistema FlowSign
+        UC1(Gerenciar Conta)
+        UC2(Iniciar Fluxo de Assinatura)
+        UC3(Acompanhar Documentos)
+        UC4(Baixar Documento Finalizado)
+    end
+
+    %% Relacionamentos entre Atores e Casos de Uso
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    
+    %% Relacionamentos entre Casos de Uso (Include)
+    UC2 -.->|"<<include>>"| UC2_1(Selecionar Arquivo)
+    UC2 -.->|"<<include>>"| UC2_2(Adicionar Signatários)
+    UC3 -- pode levar a --> UC4
+
+    %% Interações com o Sistema Externo
+    UC2 -- Envia Dados --> Autentique
+    UC4 -- Busca URL --> Autentique
     Signer -- Assina/Rejeita via --> Autentique
     Autentique -- Notifica via Webhook --> UC3
 ```
@@ -98,9 +133,11 @@ classDiagram
         +List~Document~ documents
         +listenToDocuments()
         +createDocumentWorkflow()
+        +downloadSignedDocument()
     }
     class ApiService {
         +sendDocumentToAutentique()
+        +getSignedDocumentUrl()
     }
     class AuthController {
         +signIn()
@@ -109,10 +146,14 @@ classDiagram
     class UploadScreen {
         +build()
     }
+    class DocumentDetailsScreen {
+        +build()
+    }
 
     DocumentController ..> ApiService : usa
     UploadScreen ..> DocumentController : usa
     UploadScreen ..> AuthController : usa
+    DocumentDetailsScreen ..> DocumentController : usa
 ```
 
 ---
@@ -131,6 +172,7 @@ classDiagram
 - **RF08** Exibição do status geral do documento (em_andamento, concluido, cancelado).
 - **RF09** Histórico de documentos enviados para cada usuário.
 - **RF10** Proteção de dados garantindo que um usuário só pode ver seus próprios documentos.
+- **RF11** O sistema deve permitir que o proprietário do documento realize o download do arquivo final após todos os signatários terem assinado.
 
 ### Requisitos Não Funcionais:
 
@@ -147,6 +189,9 @@ classDiagram
 
 - **Frontend (Mobile):** Flutter/Dart
 - **Gerenciamento de Estado (Flutter):** GetX
+- **Comunicação com API:** graphql_flutter (para consultas), http (para uploads)
+- **Funcionalidades Nativas:** file_picker (seleção de arquivos), url_launcher (abrir links/downloads)
+- **Utilitários:** flutter_dotenv (variáveis de ambiente), cpf_cnpj_validator, mask_text_input_formatter
 - **Backend (Serverless):** Node.js + Firebase Cloud Functions
 - **Banco de Dados:** Cloud Firestore
 - **Autenticação:** Firebase Authentication
