@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import '../models/document.dart';
 import '../services/api_service.dart';
 import 'auth_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class DocumentController extends GetxController {
   final ApiService api;
@@ -13,16 +16,16 @@ class DocumentController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = RxnString();
 
-  Stream<List<Document>>? _documentsStream;
+  StreamSubscription<List<Document>>? _documentsSubscription;
 
   @override
   void onInit() {
     super.onInit();
     final authController = Get.find<AuthController>();
 
-
     ever(authController.user, (firebaseUser) {
       if (firebaseUser == null) {
+        _documentsSubscription?.cancel();
         documents.clear();
       } else {
         listenToDocuments(firebaseUser.uid);
@@ -32,12 +35,18 @@ class DocumentController extends GetxController {
     if (authController.user.value != null) {
       listenToDocuments(authController.user.value!.uid);
     }
+  }
 
+  @override
+  void onClose() {
+    _documentsSubscription?.cancel();
+    super.onClose();
   }
 
   void listenToDocuments(String userId) {
     isLoading(true);
-    _documentsStream = FirebaseFirestore.instance
+    _documentsSubscription?.cancel();
+    final stream = FirebaseFirestore.instance
         .collection('documents')
         .where('ownerId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
@@ -46,8 +55,19 @@ class DocumentController extends GetxController {
           (snapshot) =>
               snapshot.docs.map((doc) => Document.fromFirestore(doc)).toList(),
         );
-
-    documents.bindStream(_documentsStream!);
+    _documentsSubscription = stream.listen(
+      (docList) {
+        documents.value = docList;
+        if (isLoading.value) {
+          isLoading(false);
+        }
+      },
+      onError: (error) {
+        print("Erro ao escutar documentos: $error");
+        isLoading(false);
+        errorMessage.value = "Falha ao carregar documentos.";
+      },
+    );
   }
 
   Future<void> createDocumentWorkflow({
@@ -95,12 +115,45 @@ class DocumentController extends GetxController {
           .collection('documents')
           .add(documentData);
 
+      Get.back();
       Get.snackbar(
         "Sucesso!",
         "Documento enviado! Os signatários receberão um e-mail em breve.",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
     } catch (e) {
-      Get.snackbar("Erro", "Falha ao iniciar o fluxo: ${e.toString()}");
+      Get.snackbar(
+        "Erro",
+        "Falha ao iniciar o fluxo: ${e.toString()}",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> downloadSignedDocument(Document document) async {
+    final autentiqueId = document.autentiqueId;
+    if (autentiqueId == null) {
+      Get.snackbar("Erro", "ID do documento não encontrado para o download.");
+      return;
+    }
+
+    isLoading(true);
+    try {
+      final String? downloadUrl = await api.getSignedDocumentUrl(autentiqueId);
+      if (downloadUrl != null && await canLaunchUrlString(downloadUrl)) {
+        await launchUrlString(downloadUrl);
+      } else {
+        throw Exception("Não foi possível obter ou abrir a URL de download.");
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Erro no Download",
+        "Não foi possível baixar o documento: ${e.toString()}",
+      );
     } finally {
       isLoading(false);
     }

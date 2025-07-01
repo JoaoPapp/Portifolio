@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:portifolio/controllers/document_controller.dart';
 import 'package:portifolio/models/document.dart';
 
 class DocumentDetailsScreen extends StatelessWidget {
@@ -21,6 +23,8 @@ class DocumentDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DocumentController docController = Get.find();
+
     return Scaffold(
       appBar: AppBar(title: Text(document.name)),
       body: Padding(
@@ -69,6 +73,42 @@ class DocumentDetailsScreen extends StatelessWidget {
                 },
               ),
             ),
+
+            if (document.status == 'concluido')
+              Padding(
+                padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
+                child: Obx(
+                  () => ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed:
+                        docController.isLoading.value
+                            ? null
+                            : () =>
+                                docController.downloadSignedDocument(document),
+                    icon:
+                        docController.isLoading.value
+                            ? Container(
+                              width: 24,
+                              height: 24,
+                              padding: const EdgeInsets.all(2.0),
+                              child: const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                            : const Icon(Icons.download_rounded),
+                    label: Text(
+                      docController.isLoading.value
+                          ? 'Buscando...'
+                          : 'Baixar Documento Assinado',
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

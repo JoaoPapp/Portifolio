@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:cpf_cnpj_validator/cpf_validator.dart';
 import '../controllers/document_controller.dart';
 
 class SignerInfo {
@@ -22,6 +24,10 @@ class SignersSelectionScreen extends StatefulWidget {
 class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
   final List<SignerInfo> _signers = [];
   final DocumentController docController = Get.find();
+  final _cpfMaskFormatter = MaskTextInputFormatter(
+    mask: '###.###.###-##',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
 
   Future<void> _showAddSignerDialog() async {
     final nameController = TextEditingController();
@@ -55,11 +61,18 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
                     controller: cpfController,
                     decoration: const InputDecoration(labelText: 'CPF'),
                     keyboardType: TextInputType.number,
-                    validator:
-                        (value) =>
-                            (value?.isEmpty ?? true)
-                                ? 'Campo obrigatório'
-                                : null,
+                    inputFormatters: [_cpfMaskFormatter],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo obrigatório';
+                      }
+                      if (!CPFValidator.isValid(
+                        _cpfMaskFormatter.getUnmaskedText(),
+                      )) {
+                        return 'CPF inválido';
+                      }
+                      return null;
+                    },
                   ),
                   TextFormField(
                     controller: emailController,
@@ -88,7 +101,7 @@ class _SignersSelectionScreenState extends State<SignersSelectionScreen> {
                     _signers.add(
                       SignerInfo(
                         name: nameController.text,
-                        cpf: cpfController.text,
+                        cpf: _cpfMaskFormatter.getUnmaskedText(),
                         email: emailController.text,
                       ),
                     );

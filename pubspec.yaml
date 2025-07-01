@@ -10,32 +10,33 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # ícones iOS
   cupertino_icons: ^1.0.8
 
-  # State management
   get: ^4.6.6
 
-  # GraphQL para API do Autentique
   graphql_flutter: ^5.2.0-beta.6
 
-  # <<<<<<<<<< ADICIONE ESTA LINHA >>>>>>>>>>
   gql_dio_link: ^1.0.1+1
 
-  # HTTP + upload
   dio: ^5.1.2
   file_picker: ^8.0.7
 
-  # carregar variáveis de ambiente (.env)
   flutter_dotenv: ^5.1.1
 
-  # Firebase
   firebase_core: 2.30.0
   firebase_auth: 4.15.3
   cloud_firestore: ^4.16.5
 
   mime: ^1.0.5
 
+  mask_text_input_formatter: ^2.9.0
+
+  cpf_cnpj_validator: ^2.0.0 
+
+  url_launcher: ^6.2.6
+
+  http_parser: ^4.0.2
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
