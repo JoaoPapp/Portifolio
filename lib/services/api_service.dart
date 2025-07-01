@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package.http_parser/http_parser.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   late GraphQLClient _client;
