@@ -43,6 +43,28 @@ void main() {
             'A tela de documentos deve exibir a lista ou a mensagem de "nenhum documento"',
       );
     });
+
+    testWidgets(
+      'Deve exibir uma mensagem de erro ao tentar fazer login com credenciais inválidas',
+      (WidgetTester tester) async {
+        app.main();
+        await tester.pumpUntilFound(find.text('Bem-vindo ao FlowSign'));
+
+        final emailField = find.byKey(const Key('login_email_field'));
+        final passwordField = find.byKey(const Key('login_password_field'));
+        final loginButton = find.widgetWithText(ElevatedButton, 'Entrar');
+
+        await tester.enterText(emailField, 'teste@flows-ign.com');
+        await tester.enterText(passwordField, 'senha-errada-propositalmente');
+
+        await tester.tap(loginButton);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Email ou senha inválidos.'), findsOneWidget);
+
+        expect(find.text('Meus Documentos'), findsNothing);
+      },
+    );
   });
 }
 
