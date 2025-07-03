@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:portifolio/main.dart' as app;
+import 'package:portifolio/main.dart' as app; 
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Teste de Integração do Fluxo Principal', () {
-    testWidgets('Deve fazer login e exibir a tela de documentos', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Deve fazer login e exibir a tela de documentos',
+        (WidgetTester tester) async {
+      
       app.main();
       await tester.pumpAndSettle();
 
-      final emailField = find.widgetWithText(TextField, 'Email');
-      final passwordField = find.widgetWithText(TextField, 'Senha');
+      final emailField = find.byKey(const Key('login_email_field'));
+      final passwordField = find.byKey(const Key('login_password_field'));
       final loginButton = find.widgetWithText(ElevatedButton, 'Entrar');
 
       expect(emailField, findsOneWidget);
@@ -25,9 +25,8 @@ void main() {
       await tester.enterText(passwordField, 'senha123456');
 
       await tester.tap(loginButton);
-
       await tester.pumpAndSettle(const Duration(seconds: 10));
-
+      
       expect(find.text('Meus Documentos'), findsOneWidget);
 
       final noDocumentsFinder = find.text('Nenhum documento encontrado.');
@@ -36,8 +35,7 @@ void main() {
       expect(
         (tester.any(noDocumentsFinder) || tester.any(documentsListFinder)),
         isTrue,
-        reason:
-            'A tela de documentos deve exibir a lista ou a mensagem de "nenhum documento"',
+        reason: 'A tela de documentos deve exibir a lista ou a mensagem de "nenhum documento"',
       );
 
       final logoutButton = find.byIcon(Icons.logout);

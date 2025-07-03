@@ -1,16 +1,17 @@
+// lib/screens/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:portifolio/screens/create_account_screen.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
-
     final AuthController authController = Get.find();
 
     return Scaffold(
@@ -21,8 +22,7 @@ class LoginScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Logo ou Título
-              Icon(Icons.lock_open_rounded, size: 80, color: Colors.blue),
+              const Icon(Icons.lock_open_rounded, size: 80, color: Colors.blue),
               const SizedBox(height: 16),
               Text(
                 'Bem-vindo ao FlowSign',
@@ -30,8 +30,10 @@ class LoginScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              
+
+              // --- CAMPO DE EMAIL COM A KEY ---
               TextField(
+                key: const Key('login_email_field'), // A ETIQUETA ESTÁ AQUI
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
@@ -42,7 +44,9 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // --- CAMPO DE SENHA COM A KEY ---
               TextField(
+                key: const Key('login_password_field'), // A ETIQUETA ESTÁ AQUI
                 controller: passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -64,9 +68,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                   );
                 }
-                return const SizedBox.shrink(); 
+                return const SizedBox.shrink();
               }),
-              
+
               Obx(() {
                 return ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -74,21 +78,26 @@ class LoginScreen extends StatelessWidget {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: authController.isLoading.value
-                      ? null 
-                      : () {
-                          authController.signIn(
-                            email: emailController.text.trim(),
-                            password: passwordController.text,
-                          );
-                        },
-                  child: authController.isLoading.value
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Entrar'),
+                  onPressed:
+                      authController.isLoading.value
+                          ? null
+                          : () {
+                            authController.signIn(
+                              email: emailController.text.trim(),
+                              password: passwordController.text,
+                            );
+                          },
+                  child:
+                      authController.isLoading.value
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Text('Entrar'),
                 );
               }),
               const SizedBox(height: 16),
