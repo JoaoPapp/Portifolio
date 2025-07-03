@@ -178,30 +178,49 @@ A aplicação possui uma suíte de testes robusta para garantir a qualidade e a 
 
 Estes testes validam os componentes da interface de forma isolada, garantindo que cada ecrã reage corretamente a diferentes estados e interações do utilizador.
 
-- **login_screen_test.dart:**
+- `login_screen_test.dart:`
     Verifica se os campos de "Email", "Senha" e o botão "Entrar" são exibidos.
     Garante que o método signIn do AuthController é chamado ao clicar no botão.
 
-- **create_account_screen_test.dart:**
+- `create_account_screen_test.dart:`
     Verifica se todos os campos do formulário ("Nome Completo", "CPF", "Email", "Senha") e o botão "Criar Conta" estão presentes.
     Garante que o método createAccount é chamado com os dados corretos ao submeter o formulário.
 
-- **upload_screen_test.dart:**
+- `upload_screen_test.dart:`
     Valida a exibição do indicador de progresso durante o carregamento.
     Confirma que a mensagem "Nenhum documento encontrado" é mostrada quando a lista de documentos está vazia.
     Verifica se a lista de documentos é renderizada corretamente quando existem dados.
 
-- **signers_selection_screen_test.dart:**
+- `signers_selection_screen_test.dart:`
     Garante que o ecrã inicial exibe a mensagem para adicionar signatários e que o botão de envio está desativado.
     Testa a abertura e o preenchimento do diálogo para adicionar um novo signatário.
     Verifica se um signatário é corretamente adicionado à lista e se o botão de envio é ativado.
     Confirma que o método createDocumentWorkflow é chamado ao enviar o documento para assinatura.
 
-- **document_details_screen_test.dart:**
+- `document_details_screen_test.dart:`
     Verifica se os detalhes de um documento (status, nome, lista de signatários) são exibidos corretamente.
     Garante que o botão de download não aparece para documentos com status "em andamento".
     Assegura que o botão de download aparece para documentos com status "concluido".
     Confirma que o método downloadSignedDocument é chamado ao clicar no botão.
+
+## Testes de Integração
+
+Estes testes validam o fluxo completo da aplicação, executando-a num ambiente real (emulador ou dispositivo) e interagindo com serviços externos como o Firebase.
+
+`app_test.dart`:
+
+- **Caminho Feliz:** 
+    Simula um fluxo completo de utilizador:
+    Inicia a aplicação e espera o ecrã de login.
+    Insere credenciais válidas e faz o login.
+    Verifica se a navegação para o ecrã "Meus Documentos" é bem-sucedida.
+    Confirma que a lista de documentos (ou a mensagem de lista vazia) é exibida.
+
+- **Caminho Infeliz:** 
+    Simula uma tentativa de login com credenciais inválidas:
+    Insere uma senha incorreta
+    Verifica se a navegação não acontece.
+    Confirma que a mensagem de erro "Email ou senha inválidos." é exibida no ecrã de login, validando o tratamento de erros.
 
 ---
 
