@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:portifolio/screens/create_account_screen.dart'; // Importe a tela de criação
+import 'package:portifolio/screens/create_account_screen.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -8,11 +8,9 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Controladores de texto para os campos
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
 
-    // Acessa o AuthController que já está na memória
     final AuthController authController = Get.find();
 
     return Scaffold(
@@ -33,7 +31,6 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               
-              // Campo de Email
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -45,7 +42,6 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Campo de Senha
               TextField(
                 controller: passwordController,
                 obscureText: true,
