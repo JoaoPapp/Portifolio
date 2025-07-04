@@ -180,11 +180,12 @@ A aplicação possui uma suíte de testes robusta para garantir a qualidade e a 
 Estes testes focam em validar a lógica de negócio da camada de serviços (ApiService) em total isolamento, sem depender de rede ou de serviços externos.
 
 - `api_service_test.dart:`
-    Simulação de API: Utiliza `mocktail` para simular as respostas do `GraphQLClient` e do `http.Client`.
     
-    Cenários de Sucesso: Verifica se os métodos (`getSignedDocumentUrl`, `sendDocumentToAutentique`) extraem e retornam os dados corretos quando a API responde com sucesso (status 200).
+-   Simulação de API: Utiliza `mocktail` para simular as respostas do `GraphQLClient` e do `http.Client`.
     
-    Cenários de Falha: Garante que uma `Exception` é lançada corretamente quando a API retorna um erro (ex: status 500 ou um erro na resposta GraphQL), validando o tratamento de erros.
+-   Cenários de Sucesso: Verifica se os métodos (`getSignedDocumentUrl`, `sendDocumentToAutentique`) extraem e retornam os dados corretos quando a API responde com sucesso    (status 200).
+    
+-   Cenários de Falha: Garante que uma `Exception` é lançada corretamente quando a API retorna um erro (ex: status 500 ou um erro na resposta GraphQL), validando o tratamento de erros.
 
 ## Testes de Widget
 
