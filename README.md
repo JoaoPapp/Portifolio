@@ -63,36 +63,34 @@ Foi utilizado o **Cloud Firestore**, um banco de dados NoSQL, flexível e escal�
 Representa as interações dos atores (usuários e sistemas) com as funcionalidades principais do FlowSign.
 
 ```mermaid
-flowchart TD
-    %% Definição dos Atores
-    User([Usuário Proprietário])
-    Signer([Signatário])
-    Autentique[("Sistema Autentique")]
+classDiagram
+    class DocumentController {
+        +List~Document~ documents
+        +listenToDocuments()
+        +createDocumentWorkflow()
+        +downloadSignedDocument()
+    }
+    class ApiService {
+        +sendDocumentToAutentique()
+        +getSignedDocumentUrl()
+    }
+    class AuthController {
+        +signIn()
+        +createAccount()
+        +signOut()
+    }
+    class UploadScreen {
+        +build()
+    }
+    class DocumentDetailsScreen {
+        +build()
+    }
 
-    %% Casos de Uso dentro do Sistema
-    subgraph Sistema FlowSign
-        UC1(Gerenciar Conta)
-        UC2(Iniciar Fluxo de Assinatura)
-        UC3(Acompanhar Documentos)
-        UC4(Baixar Documento Finalizado)
-    end
-
-    %% Relacionamentos entre Atores e Casos de Uso
-    User --> UC1
-    User --> UC2
-    User --> UC3
-    User --> UC4
-    
-    %% Relacionamentos entre Casos de Uso (Include)
-    UC2 -.->|"<<include>>"| UC2_1(Selecionar Arquivo)
-    UC2 -.->|"<<include>>"| UC2_2(Adicionar Signatários)
-    UC3 -- pode levar a --> UC4
-
-    %% Interações com o Sistema Externo
-    UC2 -- Envia Dados --> Autentique
-    UC4 -- Busca URL --> Autentique
-    Signer -- Assina/Rejeita via --> Autentique
-    Autentique -- Notifica via Webhook --> UC3
+    DocumentController ..> ApiService : usa
+    DocumentController ..> AuthController : usa
+    UploadScreen ..> DocumentController : usa
+    UploadScreen ..> AuthController : usa
+    DocumentDetailsScreen ..> DocumentController : usa
 ```
 
 ### Diagrama de Classes Simplificado
