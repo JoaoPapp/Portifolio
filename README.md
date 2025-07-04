@@ -128,6 +128,42 @@ classDiagram
     DocumentDetailsScreen ..> DocumentController : usa
 ```
 
+### Diagrama de Sequência
+
+Ilustra a ordem das interações entre os diferentes componentes do sistema durante o fluxo principal de criação de um documento.
+
+```mermaid
+sequenceDiagram
+    participant User as Utilizador
+    participant App as App Flutter
+    participant Functions as Firebase Functions
+    participant Autentique as API Autentique
+    participant Firestore as Banco de Dados
+
+    User->>App: Seleciona ficheiro e adiciona signatários
+    App->>Functions: Envia ficheiro e dados (via chamada à sua API)
+    activate Functions
+
+    Functions->>Autentique: Envia o documento para criar o processo de assinatura
+    activate Autentique
+    Autentique-->>Functions: Retorna o ID do documento do Autentique
+    deactivate Autentique
+
+    Functions->>Firestore: Guarda os dados do documento (status: 'em_andamento', autentiqueId, etc.)
+    Functions-->>App: Retorna sucesso
+    deactivate Functions
+
+    App->>User: Exibe "Documento enviado com sucesso!"
+
+    Note over Autentique,Firestore: Mais tarde...
+    Autentique->>Functions: Notifica via Webhook (ex: 'documento assinado')
+    activate Functions
+    Functions->>Firestore: Atualiza o status do documento no banco de dados
+    deactivate Functions
+
+    Note over Firestore,App: O App, que está a "escutar" o Firestore, <br/>atualiza a UI em tempo real.
+```
+
 ---
 
 ## Requisitos de Software
