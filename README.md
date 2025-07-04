@@ -181,7 +181,9 @@ Estes testes focam em validar a lógica de negócio da camada de serviços (ApiS
 
 - `api_service_test.dart:`
     Simulação de API: Utiliza `mocktail` para simular as respostas do `GraphQLClient` e do `http.Client`.
+    
     Cenários de Sucesso: Verifica se os métodos (`getSignedDocumentUrl`, `sendDocumentToAutentique`) extraem e retornam os dados corretos quando a API responde com sucesso (status 200).
+    
     Cenários de Falha: Garante que uma `Exception` é lançada corretamente quando a API retorna um erro (ex: status 500 ou um erro na resposta GraphQL), validando o tratamento de erros.
 
 ## Testes de Widget
@@ -237,9 +239,10 @@ Estes testes validam o fluxo completo da aplicação, executando-a num ambiente 
 Estes testes são executados com o Firebase Local Emulator Suite e validam as regras de acesso ao banco de dados Firestore, garantindo a privacidade e a segurança dos dados.
 
 `firestore.rules.test.js`:
-    Acesso Permitido: Testa se um utilizador autenticado (`user_A`) consegue ler um documento cujo `ownerId` corresponde ao seu próprio ID.
+    
+- **Acesso Permitido:** Testa se um utilizador autenticado (`user_A`) consegue ler um documento cujo `ownerId` corresponde ao seu próprio ID.
 
-    Acesso Negado: Testa o cenário mais crítico: garante que um utilizador (user_A) falha ao tentar ler um documento que pertence a outro utilizador (user_B), provando que a regra de segurança está a proteger os dados corretamente.
+- **Acesso Negado:** Testa o cenário mais crítico: garante que um utilizador (`user_A`) falha ao tentar ler um documento que pertence a outro utilizador (`user_B`), provando que a regra de segurança está a proteger os dados corretamente.
 ---
 
 ## Instruções de Uso
