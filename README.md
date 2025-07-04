@@ -174,6 +174,15 @@ classDiagram
 
 A aplicação possui uma suíte de testes robusta para garantir a qualidade e a estabilidade do código, cobrindo os principais fluxos e comportamentos da interface do utilizador. Os testes foram divididos em Testes de Widget e Testes de Integração.
 
+## Testes de Unidade
+
+Estes testes focam em validar a lógica de negócio da camada de serviços (ApiService) em total isolamento, sem depender de rede ou de serviços externos.
+
+- `api_service_test.dart:`
+    Simulação de API: Utiliza `mocktail` para simular as respostas do `GraphQLClient` e do `http.Client`.
+    Cenários de Sucesso: Verifica se os métodos (`getSignedDocumentUrl`, `sendDocumentToAutentique`) extraem e retornam os dados corretos quando a API responde com sucesso (status 200).
+    Cenários de Falha: Garante que uma `Exception` é lançada corretamente quando a API retorna um erro (ex: status 500 ou um erro na resposta GraphQL), validando o tratamento de erros.
+
 ## Testes de Widget
 
 Estes testes validam os componentes da interface de forma isolada, garantindo que cada ecrã reage corretamente a diferentes estados e interações do utilizador.
@@ -222,6 +231,14 @@ Estes testes validam o fluxo completo da aplicação, executando-a num ambiente 
     Verifica se a navegação não acontece.
     Confirma que a mensagem de erro "Email ou senha inválidos." é exibida no ecrã de login, validando o tratamento de erros.
 
+## Teste de Segurança (Firebase Rules)
+
+Estes testes são executados com o Firebase Local Emulator Suite e validam as regras de acesso ao banco de dados Firestore, garantindo a privacidade e a segurança dos dados.
+
+`firestore.rules.test.js`:
+    Acesso Permitido: Testa se um utilizador autenticado (`user_A`) consegue ler um documento cujo `ownerId` corresponde ao seu próprio ID.
+
+    Acesso Negado: Testa o cenário mais crítico: garante que um utilizador (user_A) falha ao tentar ler um documento que pertence a outro utilizador (user_B), provando que a regra de segurança está a proteger os dados corretamente.
 ---
 
 ## Instruções de Uso

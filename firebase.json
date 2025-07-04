@@ -1,1 +1,31 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"flowsign-80719","appId":"1:1002118544860:android:068e74556e2df81b242319","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"flowsign-80719","configurations":{"android":"1:1002118544860:android:068e74556e2df81b242319","ios":"1:1002118544860:ios:7f5d132d38597601242319"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "flowsign-80719",
+          "appId": "1:1002118544860:android:068e74556e2df81b242319",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "flowsign-80719",
+          "configurations": {
+            "android": "1:1002118544860:android:068e74556e2df81b242319",
+            "ios": "1:1002118544860:ios:7f5d132d38597601242319"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  }
+}

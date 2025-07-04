@@ -1,0 +1,20 @@
+// firestore.rules
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // A coleção de documentos
+    match /documents/{documentId} {
+      // PERMITE a leitura (get) se o ID do utilizador que pede (request.auth.uid)
+      // for igual ao campo 'ownerId' guardado no documento.
+      allow read: if request.auth.uid == resource.data.ownerId;
+
+      // PERMITE a escrita (create) se o utilizador estiver autenticado.
+      allow create: if request.auth.uid != null;
+
+      // Nega todas as outras operações (update, delete) por segurança.
+      allow update, delete: if false;
+    }
+  }
+}
