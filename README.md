@@ -7,6 +7,7 @@
 - [Diagramas](#diagramas)
 - [Requisitos de Software](#requisitos-de-software)
 - [Stacks Utilizadas](#stacks-utilizadas)
+- [Testes](#testes)
 - [Instruções de Uso](#instruções-de-uso)
 
 ---
