@@ -65,29 +65,29 @@ Este diagrama ilustra a arquitetura geral e o fluxo de dados entre os componente
 ```mermaid
 graph TD
     subgraph "Aplicação do Utilizador"
-        A["App Flutter\n(Interface do Utilizador)"]
+        A["App Flutter (Interface do Utilizador)"]
     end
 
     subgraph "Backend Serverless (Firebase)"
-        B["Cloud Functions\n(Lógica de Negócio / API)"]
-        C["Cloud Firestore\n(Banco de Dados NoSQL)"]
-        D["Firebase Auth\n(Autenticação)"]
+        B["Cloud Functions (Lógica de Negócio / API)"]
+        C["Cloud Firestore (Banco de Dados NoSQL)"]
+        D["Firebase Auth (Autenticação)"]
     end
 
     subgraph "Serviços Externos"
-        E["API Autentique\n(Serviço de Assinaturas)"]
+        E["API Autentique (Serviço de Assinaturas)"]
     end
 
     A -- "Efetua Login / Cria Conta" --> D
-    A -- "Faz Upload do documento e\nenvia dados dos signatários" --> B
-    B -- "Chama API com os dados\npara criar o fluxo de assinatura" --> E
-    E -- "Retorna o ID do documento\nno sistema Autentique" --> B
-    B -- "Grava os metadados e o status\n'em_andamento' no Firestore" --> C
-    C -- "Sincroniza o status em\ntempo real com a UI" --> A
-    E -- "Envia o e-mail de assinatura\npara o próximo signatário" --> F((Signatário))
-    F -- "Clica no link e assina\nno site do Autentique" --> E
-    E -- "Notifica a Cloud Function\nvia Webhook (documento assinado)" --> B
-    B -- "Atualiza o status do documento\ne do signatário no Firestore" --> C
+    A -- "Faz Upload do documento e envia dados dos signatários" --> B
+    B -- "Chama API com os dados para criar o fluxo de assinatura" --> E
+    E -- "Retorna o ID do documento no sistema Autentique" --> B
+    B -- "Grava os metadados e o status 'em_andamento' no Firestore" --> C
+    C -- "Sincroniza o status em tempo real com a UI" --> A
+    E -- "Envia o e-mail de assinatura para o próximo signatário" --> F((Signatário))
+    F -- "Clica no link e assina no site do Autentique" --> E
+    E -- "Notifica a Cloud Function via Webhook (documento assinado)" --> B
+    B -- "Atualiza o status do documento e do signatário no Firestore" --> C
 ```
 
 ### Diagrama de Caso de Uso
