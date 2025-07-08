@@ -58,6 +58,38 @@ Foi utilizado o **Cloud Firestore**, um banco de dados NoSQL, flexível e escal�
 
 ## Diagramas
 
+## Diagrama de Fluxo de Dados
+
+Este diagrama ilustra a arquitetura geral e o fluxo de dados entre os componentes do sistema FlowSign.
+
+```mermaid
+graph TD
+    subgraph "Aplicação do Utilizador"
+        A[<b>App Flutter</b><br><i>(Interface do Utilizador)</i>]
+    end
+
+    subgraph "Backend Serverless (Firebase)"
+        B[<b>Cloud Functions</b><br><i>(Lógica de Negócio / API)</i>]
+        C[<b>Cloud Firestore</b><br><i>(Banco de Dados NoSQL)</i>]
+        D[<b>Firebase Auth</b><br><i>(Autenticação)</i>]
+    end
+
+    subgraph "Serviços Externos"
+        E[<b>API Autentique</b><br><i>(Serviço de Assinaturas)</i>]
+    end
+
+    A -- "1. Efetua Login / Cria Conta" --> D
+    A -- "2. Faz Upload do documento e<br>envia dados dos signatários" --> B
+    B -- "3. Chama API com os dados<br>para criar o fluxo de assinatura" --> E
+    E -- "4. Retorna o ID do documento<br>no sistema Autentique" --> B
+    B -- "5. Grava os metadados e o status<br>'em_andamento' no Firestore" --> C
+    C -- "6. Sincroniza o status em<br>tempo real com a UI" --> A
+    E -- "7. Envia o e-mail de assinatura<br>para o próximo signatário" --> F((Signatário))
+    F -- "8. Clica no link e assina<br>no site do Autentique" --> E
+    E -- "9. Notifica a Cloud Function<br>via <b>Webhook</b> (documento assinado)" --> B
+    B -- "10. Atualiza o status do documento<br>e do signatário no Firestore" --> C
+```
+
 ### Diagrama de Caso de Uso
 
 Representa as interações dos atores (usuários e sistemas) com as funcionalidades principais do FlowSign.
