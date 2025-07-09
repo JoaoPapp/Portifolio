@@ -1,6 +1,6 @@
 # FlowSign - Workflow de Assinatura Digital de Documentos
 
-[![Demonstração do App](assets/Screenshot_1.png)](https://www.youtube.com/shorts/CuLyZ_Vm9qQ)
+[![Demonstração do App](assets/Screenshot_1.png)](https://streamable.com/lmiudy)
 
 ## Índice
 
